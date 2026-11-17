@@ -18,8 +18,16 @@ import orn
 from orn import box
 
 SIZE = os.environ.get('ORN_SIZE', 'ornament')
-NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model')
-PALETTE = [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')]
+BLUE = os.environ.get('ORN_BLUE', '0') == '1'      # blue water (and solar panels); frames/pots/chairs go charcoal
+BOAT = os.environ.get('ORN_NOBOAT', '0') != '1'    # house only: no sloop, no pins, water trimmed to the ark
+NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-blue' if BLUE else '') + ('' if BOAT else '-noboat')
+PALETTE = ([('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('blue', '3D6F9C')] if BLUE else
+           [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')])
+def C(c):
+    """Logical colour -> palette key for this variant."""
+    if c == 'brown' and BLUE: return 'charcoal'
+    if c in ('water', 'solar'): return 'blue' if BLUE else 'charcoal'
+    return c
 PX0, PX1, PY0, PY1 = -0.6, 23.4, -1.9, 5.6          # water plate (m)
 LEN_MM = 100.0 if SIZE == 'ornament' else 230.0
 S = LEN_MM / (PX1 - PX0); MM = 1.0 / S
@@ -34,7 +42,7 @@ ZH, ZW, ZR = 0.65, 2.95, 3.3                        # hull top, wall top / fasci
 OVH = 0.15                                          # roof overhang
 TX0, TX1, TY1, ZT = 8.9, 12.4, 3.4, 2.0             # sunken terrace (canal side) and its floor
 m = orn.Model(NAME, PALETTE)
-m.set_priority(['white', 'grey', 'charcoal', 'brown'])   # later wins
+m.set_priority([k for k, _ in PALETTE])   # later wins (white < grey < charcoal < brown/blue)
 P = []                                              # (colour, solid)
 
 def fbox(face, u0, u1, z0, z1, d0, d1):
@@ -97,9 +105,9 @@ room = box(RX0, WX1 - RIN, WY0 + RIN, RY1, RZ0, RZ1)
 cuts.append(room)
 LIN = max(0.1, 0.6 * MM)
 lining = box(RX0 - LIN, WX1 - RIN + LIN, WY0 + RIN - LIN, RY1 + LIN, RZ0 - LIN, RZ1 + LIN) - room
-cx0, cy0 = 18.25, 0.75            # chair footprint corner (x, y), facing the window corner
+cx0, cy0 = 18.2, WY0 + RIN + 0.08  # chair footprint corner (x, y); its back is to the canal-side glass (user)
 chair = [box(cx0, cx0 + 0.75, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.42),                   # seat block
-         box(cx0, cx0 + 0.75, cy0 + 0.55, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.95),             # back
+         box(cx0, cx0 + 0.75, cy0, cy0 + 0.2, RZ0 - 0.01, RZ0 + 0.95),                     # back, window side
          box(cx0, cx0 + 0.14, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.62),                    # arms
          box(cx0 + 0.61, cx0 + 0.75, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.62)]
 cut = orn.union(cuts)
@@ -120,7 +128,7 @@ def tilted_bank(x0, x1, y0, y1, nx, ny, rise=0.3):
         yb = y0 + (y1 - y0) * j / ny; ya = min(max(yb - FW / 2, y0), y1 - FW)
         bars.append(orn.yz_prism([(ya, zt(ya) - 0.06), (ya + FW, zt(ya + FW) - 0.06), (ya + FW, zt(ya + FW) + bar_t), (ya, zt(ya) + bar_t)], x0, x1))
     bars = orn.union(bars)
-    P.append(('charcoal', panel - bars)); P.append(('white', bars))   # grid sunk into the panel so it cannot float
+    P.append(('solar', panel - bars)); P.append(('white', bars))   # grid sunk into the panel so it cannot float
 tilted_bank(0.75, 5.9, 0.25, 2.25, 3, 2)
 tilted_bank(0.75, 5.33, 3.4, 4.4, 3, 1, rise=0.18)
 # dome skylight: white upstand + dome
@@ -159,62 +167,78 @@ P.append(('grey', pont))
 for x, y in ((20.1, -0.45), (20.15, 0.35)):
     c = trimesh.creation.cylinder(radius=0.24, height=0.42, sections=20); c.apply_translation([x, y, 0.4 + 0.2])
     P.append(('brown', orn.to_manifold(c)))
-water = orn.to_manifold(trimesh.creation.extrude_polygon(sbox(PX0, PY0, PX1, PY1).buffer(-0.8).buffer(0.8, quad_segs=8), PLATE)).translate([0, 0, -PLATE])
+water_poly = sbox(PX0, PY0, PX1, PY1).buffer(-0.8).buffer(0.8, quad_segs=8)
+if not BOAT:   # just the ark: water hugs the hull, deck and pontoon
+    water_poly = sbox(WX0 - 0.06, -1.45, 20.6, WY1 + 0.06).buffer(0.55, join_style=2).buffer(-0.4).buffer(0.4, quad_segs=8)
+water = orn.to_manifold(trimesh.creation.extrude_polygon(water_poly, PLATE)).translate([0, 0, -PLATE])
 # sloop pins (the boat plugs onto them); mm dimensions are absolute
-PIN_D, PIN_H, HOLE_D, HOLE_H = 1.8, 1.6, 2.0, 2.0
+PIN_D, PIN_H, HOLE_D, HOLE_H = 1.8, 1.3, 2.0, 1.5
 BX, BY0, BY1, BEAM = 21.85, -0.3, 4.7, 1.9
-PINS = [(BX, 0.7), (BX, 3.0)]
+PINS = [(BX, 0.7), (BX, 2.6)] if BOAT else []
 pins = []
 for x, y in PINS:
     c = trimesh.creation.cylinder(radius=PIN_D / 2 * MM, height=PIN_H * MM + 0.02, sections=24)
     c.apply_translation([x, y, (PIN_H * MM) / 2 - 0.01]); pins.append(orn.to_manifold(c))
-P.append(('charcoal', water + orn.union(pins)))
+P.append(('water', water + orn.union(pins) if pins else water))
 P.append(('grey', hull)); P.append(('white', walls)); P.append(('charcoal', roof))
-for col, s_ in P: m.add(col, s_)
+for col, s_ in P: m.add(C(col), s_)
 
-ring = SIZE == 'ornament'
+if BOAT:
+    # ---------------------------------------------------------------- the sloop (separate print)
+    b = orn.Model(NAME + '-boat', PALETTE)
+    b.set_priority([k for k, _ in PALETTE])
+    plan = SP([(BX - BEAM / 2, BY0), (BX + BEAM / 2, BY0), (BX + BEAM / 2, 3.1), (BX + 0.5, 4.25), (BX, BY1), (BX - 0.5, 4.25), (BX - BEAM / 2, 3.1)])
+    plan = plan.buffer(-0.12).buffer(0.12)
+    FB = 0.8                                           # freeboard
+    hull_b = []
+    NF = 20
+    for i in range(NF):                                # flared hull: bottom inset 0.25 m, rounded bilge
+        z0, z1 = FB * 0.4 * i / NF, FB * 0.4 * (i + 1) / NF
+        t = (i + 0.5) / NF
+        hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(-0.25 * (1 - math.sin(t * math.pi / 2))), z1 - z0 + 0.002)).translate([0, 0, z0]))
+    hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan, FB * 0.6)).translate([0, 0, FB * 0.4]))
+    hull_b = orn.union(hull_b)
+    # open boat (user: uncovered): hollow hull with a floor, stern bench, mid thwart and a small console
+    WB = max(0.1, 0.9 * MM)                             # hull wall
+    FLOOR = 0.42                                        # floor top (solid below, so the pin holes stay hidden)
+    well = plan.buffer(-WB) & sbox(BX - 2, BY0 + WB, BX + 2, 3.3)
+    hull_b = hull_b - orn.to_manifold(trimesh.creation.extrude_polygon(well, 2.0)).translate([0, 0, FLOOR])
+    seats = orn.union([orn.to_manifold(trimesh.creation.extrude_polygon(well & sbox(BX - 2, y0, BX + 2, y1), 0.22)).translate([0, 0, FLOOR - 0.01])
+                       for y0, y1 in ((BY0, BY0 + 0.55), (1.45, 1.85))])
+    floor_ = orn.to_manifold(trimesh.creation.extrude_polygon(well, max(0.03, 0.25 * MM))).translate([0, 0, FLOOR - 0.01])
+    console = box(BX + 0.12, BX + 0.62, 2.3, 2.75, FLOOR - 0.01, FB + 0.25) - box(BX + 0.1, BX + 0.64, 2.3, 2.5, FB + 0.05, FB + 0.3)
+    rub = orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(0.05).difference(plan.buffer(-0.08)), 0.1)).translate([0, 0, FB - 0.18])
+    motor = box(BX - 0.18, BX + 0.18, BY0 - 0.45, BY0 + 0.02, 0.35, FB + 0.45) + box(BX - 0.07, BX + 0.07, BY0 - 0.3, BY0 - 0.12, 0.0, 0.4)
+    holes = []
+    for x, y in PINS:
+        c = trimesh.creation.cylinder(radius=HOLE_D / 2 * MM, height=HOLE_H * MM * 2, sections=24); c.apply_translation([x, y, 0]); holes.append(orn.to_manifold(c))
+    holes = orn.union(holes)
+    b.add('white', hull_b - holes); b.add('white', rub); b.add('grey', floor_ + seats); b.add('white', console); b.add('grey', motor - holes)
+
 out = os.path.join(ROOT, 'out', NAME)
-# centre of mass (with the sloop moored), to stand the 3/4 ring in the sunken terrace right above it, crossways
-allb = orn.union([orn.union(v) for v in m.parts.values() if v])
-tmc = orn.to_trimesh(allb); com = tmc.center_mass
-bvol = 1.9 * 4.6 * 1.0 * 0.6                         # rough sloop volume (m3) moored at x=BX
-com = (com * tmc.volume + np.array([BX, 2.2, 0.5]) * bvol) / (tmc.volume + bvol)
-RO = 10.0 / 2 * MM
-rxy = (min(max(com[0], TX0 + 0.5), TX1 - 0.5), min(max(com[1], WY0 + RO + 0.05), TY1 - RO - 0.05))
-print('com', np.round(com, 2), 'ring at', np.round(rxy, 2))
-parts, summary = orn.finish(m, S, out, ring=ring, ring_key='charcoal', ring_embed_z=ZT, ring_od_mm=10.0, ring_tube_mm=2.6, ring_xy=rxy, ring_plane='yz')
+# centre of mass, measured on the finished print parts (the pre-resolve estimate was off by ~0.07 m = 4 degrees)
+if BOAT:
+    bparts, bsum = orn.finish(b, S, os.path.join(ROOT, 'out', NAME + '-boat'), ring=False)
+    print('boat', json.dumps({k: bsum[k] for k in ['size_mm', 'scale']}))
+def print_com(model_parts, extra=()):
+    ms = list(model_parts.values()) + list(extra)
+    return sum(t.center_mass * t.volume for t in ms) / sum(t.volume for t in ms) / S   # model metres (finish only shifts z)
+if SIZE == 'ornament':
+    import copy
+    m0 = copy.copy(m); m0.parts = {k: list(v) for k, v in m.parts.items()}
+    parts0, _ = orn.finish(m0, S, out, ring=False)
+    com = print_com(parts0, bparts.values() if BOAT else ())   # balanced with the sloop moored; -noboat balances without
+    print('com', np.round(com, 3))
+    # hanger: two 3/4 eyelets sunk into the main roof, on the centre-of-mass line across the boat and symmetric about
+    # it along the boat, either side of the sunken terrace. A loop of thread through both hangs the ark level in
+    # both axes; a single ring could not stand over the centre of mass without sitting in the terrace pit.
+    EOD, ET = 5.5, 1.7                               # eyelet outer diameter / tube (mm): ~2.1 mm hole for thread
+    Re, re_ = (EOD - ET) / 2 * MM, ET / 2 * MM
+    a = max(com[0] - (TX0 - Re - re_ - 0.25), (TX1 + Re + re_ + 0.25) - com[0])
+    for ex in (com[0] - a, com[0] + a):
+        t = orn.torus(Re, re_).rotate([90, 0, 90]).translate([ex, com[1], ZR + Re * math.cos(math.radians(45))])
+        m.add('charcoal', t)
+    print('eyelets at x', round(com[0] - a, 2), round(com[0] + a, 2), 'y', round(com[1], 2))
+parts, summary = orn.finish(m, S, out, ring=False)
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:200])
 
-# ---------------------------------------------------------------- the sloop (separate print)
-b = orn.Model(NAME + '-boat', PALETTE)
-b.set_priority(['white', 'grey', 'charcoal', 'brown'])
-plan = SP([(BX - BEAM / 2, BY0), (BX + BEAM / 2, BY0), (BX + BEAM / 2, 3.1), (BX + 0.5, 4.25), (BX, BY1), (BX - 0.5, 4.25), (BX - BEAM / 2, 3.1)])
-plan = plan.buffer(-0.12).buffer(0.12)
-FB = 0.8                                           # freeboard
-hull_b = []
-NF = 20
-for i in range(NF):                                # flared hull: bottom inset 0.25 m, rounded bilge
-    z0, z1 = FB * 0.4 * i / NF, FB * 0.4 * (i + 1) / NF
-    t = (i + 0.5) / NF
-    hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(-0.25 * (1 - math.sin(t * math.pi / 2))), z1 - z0 + 0.002)).translate([0, 0, z0]))
-hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan, FB * 0.6)).translate([0, 0, FB * 0.4]))
-hull_b = orn.union(hull_b)
-cover = []
-inner = plan.buffer(-0.14) & sbox(BX - 2, BY0 + 0.2, BX + 2, 3.75)
-NC = 16
-for i in range(NC):                                # tonneau cover: a low rounded hump (elliptic profile)
-    t = i / NC; z0 = FB + 0.42 * t
-    inset = 0.62 * (1 - math.sqrt(max(0.0, 1 - t * t)))
-    g = inner.buffer(-inset)
-    if g.is_empty: break
-    cover.append(orn.to_manifold(trimesh.creation.extrude_polygon(g, 0.42 / NC + 0.01)).translate([0, 0, z0 - 0.005]))
-cover = orn.union(cover)
-rub = orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(0.05).difference(plan.buffer(-0.08)), 0.1)).translate([0, 0, FB - 0.18])
-motor = box(BX - 0.18, BX + 0.18, BY0 - 0.45, BY0 + 0.02, 0.35, FB + 0.45) + box(BX - 0.07, BX + 0.07, BY0 - 0.3, BY0 - 0.12, 0.0, 0.4)
-holes = []
-for x, y in PINS:
-    c = trimesh.creation.cylinder(radius=HOLE_D / 2 * MM, height=HOLE_H * MM * 2, sections=24); c.apply_translation([x, y, 0]); holes.append(orn.to_manifold(c))
-holes = orn.union(holes)
-b.add('white', hull_b - holes); b.add('white', rub); b.add('charcoal', cover); b.add('grey', motor - holes)
-bparts, bsum = orn.finish(b, S, os.path.join(ROOT, 'out', NAME + '-boat'), ring=False)
-print('boat', json.dumps({k: bsum[k] for k in ['size_mm', 'scale']}))

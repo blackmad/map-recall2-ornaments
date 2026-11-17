@@ -1,6 +1,5 @@
 {
  "dropped_slivers": {
-  "charcoal": 0,
   "grey": 0,
   "white": 0
  },
@@ -13,27 +12,20 @@
  "scale": "1:240",
  "extruders": {
   "white": "EEEBE3",
-  "grey": "8E8E88",
-  "charcoal": "2A2C30"
+  "grey": "8E8E88"
  },
  "parts": {
-  "charcoal": {
-   "watertight": true,
-   "volume_mm3": 154.4,
-   "bodies": 1,
-   "overhang_mm2": 105.2
-  },
   "grey": {
    "watertight": true,
-   "volume_mm3": 11.7,
-   "bodies": 1,
-   "overhang_mm2": 2.5
+   "volume_mm3": 45.6,
+   "bodies": 2,
+   "overhang_mm2": 88.4
   },
   "white": {
    "watertight": true,
-   "volume_mm3": 446.5,
-   "bodies": 1,
-   "overhang_mm2": 49.8
+   "volume_mm3": 320.3,
+   "bodies": 2,
+   "overhang_mm2": 53.7
   },
   "_exterior": {
    "overhang_mm2": 52.19,
@@ -47,8 +39,6 @@
   }
  },
  "overlaps_mm3": {
-  "charcoal&grey": 0.0,
-  "charcoal&white": 0.0,
   "grey&white": 0.0
  },
  "base_cap": null

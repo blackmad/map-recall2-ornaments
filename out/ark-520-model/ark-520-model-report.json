@@ -27,7 +27,7 @@
   },
   "charcoal": {
    "watertight": true,
-   "volume_mm3": 65316.5,
+   "volume_mm3": 65315.0,
    "bodies": 4,
    "overhang_mm2": 10277.6
   },
@@ -39,7 +39,7 @@
   },
   "white": {
    "watertight": true,
-   "volume_mm3": 158855.2,
+   "volume_mm3": 158856.2,
    "bodies": 5,
    "overhang_mm2": 9914.8
   },
