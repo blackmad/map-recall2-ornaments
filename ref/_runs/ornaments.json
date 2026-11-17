@@ -1,0 +1,15 @@
+{
+ "name": "ornaments",
+ "generatedAt": "2026-11-16T23:04:49.307Z",
+ "total": 2,
+ "withFront": 2,
+ "withAlt": 2,
+ "withThumb": 2,
+ "status": {
+  "ok": 2
+ },
+ "pands": [
+  "0363100012091705",
+  "0363100012186089"
+ ]
+}

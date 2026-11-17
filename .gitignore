@@ -1,0 +1,10 @@
+venv/
+logs/
+renders/
+__pycache__/
+.DS_Store
+# scratch: renders, probes, test caps; keep the source GLBs and scripts
+work/*
+!work/*.glb
+!work/*.py
+work/orca/

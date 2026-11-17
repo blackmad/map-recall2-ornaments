@@ -1,0 +1,61 @@
+{
+  "_links":{
+  "schema":"https://schemas.data.amsterdam.nl/datasets/bag/panden/v1",
+  "self":{
+  "href":"https://api.data.amsterdam.nl/v1/bag/panden/0363100012091705?_format=json&volgnummer=2",
+  "title":"0363100012091705",
+  "identificatie":"0363100012091705",
+  "volgnummer":2
+},
+  "bevatVerblijfsobjecten":[
+  {"href":"https://api.data.amsterdam.nl/v1/bag/verblijfsobjecten/0363010000544882?_format=json&volgnummer=2","title":"0363010000544882","identificatie":"0363010000544882","volgnummer":2},
+  {"href":"https://api.data.amsterdam.nl/v1/bag/verblijfsobjecten/0363010000544883?_format=json&volgnummer=2","title":"0363010000544883","identificatie":"0363010000544883","volgnummer":2},
+  {"href":"https://api.data.amsterdam.nl/v1/bag/verblijfsobjecten/0363010000555464?_format=json&volgnummer=2","title":"0363010000555464","identificatie":"0363010000555464","volgnummer":2}
+],
+  "ligtInBouwblok":{
+  "href":"https://api.data.amsterdam.nl/v1/gebieden/bouwblokken/03630012099035?_format=json&volgnummer=1",
+  "title":"AE21",
+  "identificatie":"03630012099035",
+  "volgnummer":1
+},
+  "ligtInBuurt":{
+  "href":"https://api.data.amsterdam.nl/v1/gebieden/buurten/03630980000167?_format=json&volgnummer=1",
+  "title":"Cremerbuurt-Oost",
+  "identificatie":"03630980000167",
+  "volgnummer":1
+},
+  "heeftDossier":null,
+  "heeftOnderzoeken":[]
+},
+  "identificatie":"0363100012091705",
+  "volgnummer":2,
+  "plusvolgnummer":7,
+  "registratiedatum":"2023-09-09T15:28:04.962000",
+  "geconstateerd":false,
+  "geometrie":{
+  "type":"Polygon",
+  "coordinates":[
+  [[119513.381,486075.044],[119511.041,486074.164],[119512.278,486070.874],[119509.765,486069.929],[119513.559,486059.667],[119518.262,486061.374],[119513.381,486075.044]]
+]
+},
+  "oorspronkelijkBouwjaar":1899,
+  "statusCode":null,
+  "statusOmschrijving":"Pand in gebruik",
+  "beginGeldigheid":"2023-09-09T00:00:00",
+  "eindGeldigheid":null,
+  "documentdatum":"2023-09-09",
+  "documentnummer":"GV00007150_AC00AC",
+  "naam":null,
+  "liggingCode":null,
+  "liggingOmschrijving":"Tussengebouw",
+  "typeWoonobject":"Meerdere woningen",
+  "ligtInBouwblokId":"03630012099035",
+  "ligtInBuurtId":"03630980000167",
+  "aantalBouwlagen":6,
+  "hoogsteBouwlaag":5,
+  "laagsteBouwlaag":0,
+  "heeftDossierId":null,
+  "bagprocesCode":null,
+  "bagprocesOmschrijving":"Correctie",
+  "datumActueelTot":null
+}

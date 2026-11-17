@@ -1,0 +1,91 @@
+{
+ "dropped_slivers": {
+  "white": 0,
+  "dark": 0,
+  "roof": 0,
+  "brick": 0
+ },
+ "name": "eerste-helmersstraat-148",
+ "size_mm": [
+  19.3,
+  52.5,
+  69.8
+ ],
+ "scale": "1:258",
+ "extruders": {
+  "brick": "8C4A3A",
+  "white": "F1EEE7",
+  "dark": "2B3440",
+  "roof": "3C3F44"
+ },
+ "parts": {
+  "white": {
+   "watertight": true,
+   "volume_mm3": 502.2,
+   "bodies": 30,
+   "overhang_mm2": 263.2
+  },
+  "dark": {
+   "watertight": true,
+   "volume_mm3": 500.0,
+   "bodies": 44,
+   "overhang_mm2": 141.5
+  },
+  "roof": {
+   "watertight": true,
+   "volume_mm3": 870.0,
+   "bodies": 4,
+   "overhang_mm2": 851.1
+  },
+  "brick": {
+   "watertight": true,
+   "volume_mm3": 40789.9,
+   "bodies": 2,
+   "overhang_mm2": 166.7
+  },
+  "_exterior": {
+   "overhang_mm2": 94.83,
+   "overhang_by_z": {
+    "3": 3.13,
+    "10": 3.93,
+    "11": 1.68,
+    "12": 12.3,
+    "13": 10.77,
+    "14": 0.17,
+    "15": 5.7,
+    "17": 1.97,
+    "21": 0.85,
+    "23": 6.8,
+    "24": 0.51,
+    "25": 0.54,
+    "27": 5.7,
+    "29": 1.97,
+    "33": 0.85,
+    "34": 6.28,
+    "35": 1.74,
+    "38": 6.85,
+    "43": 0.29,
+    "44": 0.31,
+    "45": 7.76,
+    "46": 0.72,
+    "47": 1.1,
+    "48": 0.17,
+    "54": 1.04,
+    "56": 1.07,
+    "57": 1.64,
+    "60": 2.08,
+    "67": 5.75,
+    "68": 1.12
+   },
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {
+  "white&dark": 0.0,
+  "white&roof": 0.0,
+  "white&brick": 0.0,
+  "dark&roof": 0.0,
+  "dark&brick": -0.0,
+  "roof&brick": 0.0
+ }
+}

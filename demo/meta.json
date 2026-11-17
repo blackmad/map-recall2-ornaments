@@ -1,0 +1,120 @@
+{
+ "da-costakade-13-lit": {
+  "size": [
+   56.2,
+   43.6,
+   65.7
+  ],
+  "scale": "1:290",
+  "colours": {
+   "brick": "7A4434",
+   "white": "EEEAE0",
+   "dark": "23292F",
+   "slate": "4E5A53"
+  },
+  "overhang": 873
+ },
+ "da-costakade-13": {
+  "size": [
+   56.2,
+   43.6,
+   65.7
+  ],
+  "scale": "1:290",
+  "colours": {
+   "brick": "7A4434",
+   "white": "EEEAE0",
+   "dark": "23292F",
+   "slate": "4E5A53"
+  },
+  "overhang": 613
+ },
+ "eerste-helmersstraat-148-lit": {
+  "size": [
+   19.3,
+   52.5,
+   69.8
+  ],
+  "scale": "1:258",
+  "colours": {
+   "brick": "8C4A3A",
+   "white": "F1EEE7",
+   "dark": "2B3440",
+   "roof": "3C3F44"
+  },
+  "overhang": 335
+ },
+ "eerste-helmersstraat-148": {
+  "size": [
+   19.3,
+   52.5,
+   69.8
+  ],
+  "scale": "1:258",
+  "colours": {
+   "brick": "8C4A3A",
+   "white": "F1EEE7",
+   "dark": "2B3440",
+   "roof": "3C3F44"
+  },
+  "overhang": 95
+ },
+ "het-pakhuis-lit": {
+  "size": [
+   39.5,
+   32.0,
+   69.7
+  ],
+  "scale": "1:509",
+  "colours": {
+   "brick": "42302A",
+   "white": "F4F2EC",
+   "charcoal": "2E2E30"
+  },
+  "overhang": 586
+ },
+ "het-pakhuis-noletters-lit": {
+  "size": [
+   39.5,
+   32.0,
+   69.7
+  ],
+  "scale": "1:509",
+  "colours": {
+   "brick": "42302A",
+   "white": "F4F2EC",
+   "charcoal": "2E2E30"
+  },
+  "overhang": 573
+ },
+ "het-pakhuis-noletters": {
+  "size": [
+   39.5,
+   32.0,
+   69.7
+  ],
+  "scale": "1:509",
+  "colours": {
+   "brick": "42302A",
+   "cream": "E6DCC6",
+   "glass": "5D7380",
+   "charcoal": "2E2E30"
+  },
+  "overhang": 272
+ },
+ "het-pakhuis": {
+  "size": [
+   39.5,
+   32.0,
+   69.7
+  ],
+  "scale": "1:509",
+  "colours": {
+   "brick": "42302A",
+   "cream": "E6DCC6",
+   "glass": "5D7380",
+   "charcoal": "2E2E30"
+  },
+  "overhang": 287
+ }
+}
