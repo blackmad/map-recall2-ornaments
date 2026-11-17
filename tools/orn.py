@@ -160,7 +160,7 @@ class Model:
 
 # ---------------------------------------------------------------- ring
 
-def hanging_ring(body: Manifold, scale, ring_od_mm=11.0, tube_mm=2.4, post_mm=3.0, min_z=None):
+def hanging_ring(body: Manifold, scale, ring_od_mm=11.0, tube_mm=2.4, post_mm=3.0, min_z=None, embed_z=None):
     """Ring in the facade plane (xz), centred over the centre of mass. Model units in metres."""
     tm = to_trimesh(body)
     com = tm.center_mass
@@ -170,6 +170,10 @@ def hanging_ring(body: Manifold, scale, ring_od_mm=11.0, tube_mm=2.4, post_mm=3.
     zmax = top_height_near(tm, com[0], com[1], R + r)
     zc = zmax + R + r * 0.2
     if min_z is not None: zc = max(zc, min_z + R + r)   # stand the ring clear of e.g. a roof-terrace railing
+    if embed_z is not None:     # 3/4 ring: the bottom quarter is sunk into the deck at embed_z, no post
+        zc = embed_z + R * math.cos(math.radians(45))
+        t = torus(R, r).rotate([90, 0, 0]).translate([com[0], com[1], zc])
+        return t, t ^ box(com[0] - 1e3, com[0] + 1e3, com[1] - 1e3, com[1] + 1e3, -1e3, embed_z), com
     t = torus(R, r).rotate([90, 0, 0]).translate([com[0], com[1], zc])
     # post: from below the roof surface up into the ring
     lo = top_height_near(tm, com[0], com[1], post_mm / 2 * s, mode='min') - 2.0 * s
@@ -293,12 +297,12 @@ def thin_report(parts_mm: dict, pitch=0.1, min_feature=0.6):
     thin = M & (loc < min_feature)
     return dict(voxels=int(M.sum()), thin_voxels=int(thin.sum()), thin_fraction=round(float(thin.sum()) / max(1, M.sum()), 5))
 
-def finish(model: Model, scale_mm_per_m: float, out_dir: str, ring=True, ring_key=None, ring_min_z=None):
+def finish(model: Model, scale_mm_per_m: float, out_dir: str, ring=True, ring_key=None, ring_min_z=None, ring_embed_z=None, ring_od_mm=11.0, ring_tube_mm=2.4):
     os.makedirs(out_dir, exist_ok=True)
     solids = model.resolve()
     if ring:
         body = union(list(solids.values()))
-        ring_m, boss, com = hanging_ring(body, scale_mm_per_m, min_z=ring_min_z)
+        ring_m, boss, com = hanging_ring(body, scale_mm_per_m, ring_od_mm=ring_od_mm, tube_mm=ring_tube_mm, min_z=ring_min_z, embed_z=ring_embed_z)
         rk = ring_key or model.priority[0]
         taken = union([v for k, v in solids.items() if k != rk])
         solids[rk] = union([solids[rk], (union([ring_m, boss]) - taken)])

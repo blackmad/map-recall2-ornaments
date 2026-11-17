@@ -42,6 +42,20 @@ BAND = max(0.15, 0.5 * MM)          # green string course height
 print(f'scale 1:{1000 / S:.0f}, 1 mm = {MM:.3f} m')
 B.massing()
 
+# ------------------------------------------------------------------ facades
+foot = B.foot
+def outward_frame(a, b):
+    a, b = np.asarray(a, float), np.asarray(b, float); d = (b - a) / np.linalg.norm(b - a)
+    nrm = np.array([d[1], -d[0], 0.0]); mid = (a + b) / 2
+    if foot.contains(Point(*(mid + nrm[:2] * 0.3))): nrm = -nrm
+    fr = Frame(nrm)
+    ua, ub = sorted([np.r_[a, 0] @ fr.u, np.r_[b, 0] @ fr.u])
+    return dict(fr=fr, s=float(np.r_[a, 0] @ fr.n), u0=ua, u1=ub)
+FAC = dict(E1=outward_frame((-7.72, 0.09), (-3.46, 2.91)), E2=outward_frame((-3.0, 3.14), (1.55, 4.93)),
+           E3=outward_frame((1.56, 4.93), (7.13, -0.2)), E4=outward_frame((7.13, -0.2), (0.5, -6.65)),
+           E5=outward_frame((-0.21, -6.08), (-7.72, 0.09)))
+for k, f in FAC.items(): print(k, 'n', np.round(f['fr'].n[:2], 2), 's', round(f['s'], 2), 'u', round(f['u0'], 2), round(f['u1'], 2))
+
 # ------------------------------------------------------------------ roof terrace (inset into the flat top)
 H, T, res, x0, y0 = B.H, B.T, B.res, B.x0, B.y0
 ZFLAT = 16.4
@@ -51,7 +65,11 @@ lab, nlab = ndimage.label(flat); flat = lab == (np.argmax(np.bincount(lab.ravel(
 PARA = max(0.36, 1.2 * MM)
 r = int(round(PARA / res))
 yy, xx = np.mgrid[-r:r + 1, -r:r + 1]
-terr = ndimage.binary_erosion(flat, structure=(xx * xx + yy * yy) <= r * r)
+GD = max(0.6, 2.0 * MM)     # screen gable depth (user 2026-11-17: nothing rises behind its face)
+ROOM = 1.6                  # 4th-floor room behind the gable keeps the full roof height; the terrace starts behind it
+_n2 = FAC['E2']['fr'].n; _gx, _gy = np.meshgrid(x0 + np.arange(H.shape[1]) * res, y0 + np.arange(H.shape[0]) * res)
+keep_flat = (_gx * _n2[0] + _gy * _n2[1]) > FAC['E2']['s'] - GD - ROOM
+terr = ndimage.binary_erosion(flat & ~keep_flat, structure=(xx * xx + yy * yy) <= r * r)
 TDEPTH = 0.95
 H[terr] = ZFLAT - TDEPTH
 cs = max(measure.find_contours(flat.astype(float), 0.5), key=len)
@@ -67,19 +85,6 @@ if LIT:
     cav = orn.cavity_from_heightfield(H, x0, y0, res, WALL)
     body = body - cav; roof = roof - cav
 
-# ------------------------------------------------------------------ facades
-foot = B.foot
-def outward_frame(a, b):
-    a, b = np.asarray(a, float), np.asarray(b, float); d = (b - a) / np.linalg.norm(b - a)
-    nrm = np.array([d[1], -d[0], 0.0]); mid = (a + b) / 2
-    if foot.contains(Point(*(mid + nrm[:2] * 0.3))): nrm = -nrm
-    fr = Frame(nrm)
-    ua, ub = sorted([np.r_[a, 0] @ fr.u, np.r_[b, 0] @ fr.u])
-    return dict(fr=fr, s=float(np.r_[a, 0] @ fr.n), u0=ua, u1=ub)
-FAC = dict(E1=outward_frame((-7.72, 0.09), (-3.46, 2.91)), E2=outward_frame((-3.0, 3.14), (1.55, 4.93)),
-           E3=outward_frame((1.56, 4.93), (7.13, -0.2)), E4=outward_frame((7.13, -0.2), (0.5, -6.65)),
-           E5=outward_frame((-0.21, -6.08), (-7.72, 0.09)))
-for k, f in FAC.items(): print(k, 'n', np.round(f['fr'].n[:2], 2), 's', round(f['s'], 2), 'u', round(f['u0'], 2), round(f['u1'], 2))
 
 # steep pointed gable on E2 (photo: ~58 degrees, finial, stone copings), replacing the game model's low gable
 fg = FAC['E2']; frg = fg['fr']
@@ -87,7 +92,6 @@ ZE, UC, HW = 14.4, (fg['u0'] + fg['u1']) / 2, (fg['u1'] - fg['u0']) / 2
 APEX = ZE + HW * math.tan(math.radians(58))
 tri = [(fg['u0'], ZE - 0.5), (fg['u1'], ZE - 0.5), (fg['u1'], ZE), (UC, APEX), (fg['u0'], ZE)]
 def lowered(dz): return [(fg['u0'], ZE - 0.5), (fg['u1'], ZE - 0.5), (fg['u1'], ZE - dz), (UC, APEX - dz), (fg['u0'], ZE - dz)]
-GD = max(0.6, 2.0 * MM)     # screen gable: nothing rises behind it (user 2026-11-17)
 gab = frg.prism(tri, fg['s'] - GD, fg['s'])
 body = body + gab
 dz_skin = 0.9 * MM / math.cos(math.radians(58))
@@ -180,7 +184,7 @@ fr2 = FAC['E2']['fr']
 P_BAL = max(0.55, 1.9 * MM)
 for o in OPEN['E2']:
     if o['w0'] > 14:      # gable window, moved onto the new gable face and sized from the photo
-        o = dict(o, s=fg['s'], u0=UC - 0.72, u1=UC + 0.72, w0=14.15 + 0.05, w1=14.15 + 2.5)   # 4th-floor French window (user: entirely on the 4th floor)
+        o = dict(o, s=fg['s'], u0=UC - 0.72, u1=UC + 0.72, w0=14.15 + 0.2, w1=ZFLAT - 0.25)   # 4th-floor French window (user: entirely on the 4th floor)
         window('E2', o, 'round', mullion=True); continue
     window('E2', o, 'seg', mullion=True)
     if 3.5 < o['w0'] < 12:                               # balconette floors 1-3
@@ -312,7 +316,10 @@ for fk in ('E1', 'E3', 'E4'):
         adds.append(('brick', fr.side_prism([(sw - 0.05, ZEAVE - 0.52), (sw, ZEAVE - 0.52), (sw + 0.1, ZEAVE - 0.42), (sw + 0.1, ZEAVE - 0.34), (sw - 0.05, ZEAVE - 0.34)], u, u + 0.13)))
 
 # ------------------------------------------------------------------ roof terrace railing on the parapet
-line = flat_poly.buffer(-PARA / 2)
+rh = int(round(PARA / 2 / res)); yy2, xx2 = np.mgrid[-rh:rh + 1, -rh:rh + 1]
+rail_mask = ndimage.binary_dilation(terr, structure=(xx2 * xx2 + yy2 * yy2) <= rh * rh)
+cr = max(measure.find_contours(rail_mask.astype(float), 0.5), key=len)
+line = SP([(x0 + c[1] * res, y0 + c[0] * res) for c in cr]).buffer(0).simplify(0.05)
 if line.geom_type != 'Polygon': line = max(line.geoms, key=lambda p: p.area)
 ringp = line.buffer(RT / 2).difference(line.buffer(-RT / 2))
 RH = 0.9
@@ -330,5 +337,5 @@ for col, s_ in GABLE: m.add(col, s_)
 for col, s in adds:
     if col == 'slate': s = s - cut
     m.add(col, s)
-parts, summary = orn.finish(m, S, os.path.join(ROOT, 'out', NAME), ring_key='slate', ring_min_z=ZFLAT + RH + 0.15)
+parts, summary = orn.finish(m, S, os.path.join(ROOT, 'out', NAME), ring_key='slate', ring_embed_z=ZFLAT - TDEPTH, ring_od_mm=15.0, ring_tube_mm=3.0)
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:300])
