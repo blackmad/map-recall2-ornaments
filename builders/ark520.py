@@ -18,14 +18,16 @@ import orn
 from orn import box
 
 SIZE = os.environ.get('ORN_SIZE', 'ornament')
-BLUE = os.environ.get('ORN_BLUE', '0') == '1'      # blue water (and solar panels); frames/pots/chairs go charcoal
+MIX = os.environ.get('ORN_MIX', '0') == '1'        # 5 slots: blue water AND brown frames; grey is mixed from white+black by the user
+BLUE = MIX or os.environ.get('ORN_BLUE', '0') == '1'  # blue water (and solar panels); without MIX frames/pots/chairs go charcoal
 BOAT = os.environ.get('ORN_NOBOAT', '0') != '1'    # house only: no sloop, no pins, water trimmed to the ark
-NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-blue' if BLUE else '') + ('' if BOAT else '-noboat')
-PALETTE = ([('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('blue', '3D6F9C')] if BLUE else
+NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-mix' if MIX else '-blue' if BLUE else '') + ('' if BOAT else '-noboat')
+PALETTE = ([('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24'), ('blue', '3D6F9C')] if MIX else
+           [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('blue', '3D6F9C')] if BLUE else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')])
 def C(c):
     """Logical colour -> palette key for this variant."""
-    if c == 'brown' and BLUE: return 'charcoal'
+    if c == 'brown' and BLUE and not MIX: return 'charcoal'
     if c in ('water', 'solar'): return 'blue' if BLUE else 'charcoal'
     return c
 PX0, PX1, PY0, PY1 = -0.6, 23.4, -1.9, 5.6          # water plate (m)

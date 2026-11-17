@@ -1,0 +1,45 @@
+{
+ "dropped_slivers": {
+  "grey": 0,
+  "white": 0
+ },
+ "name": "ark-520-mix-boat",
+ "size_mm": [
+  8.3,
+  22.7,
+  5.2
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "white": "EEEBE3",
+  "grey": "8E8E88"
+ },
+ "parts": {
+  "grey": {
+   "watertight": true,
+   "volume_mm3": 45.6,
+   "bodies": 2,
+   "overhang_mm2": 88.4
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 320.3,
+   "bodies": 2,
+   "overhang_mm2": 53.7
+  },
+  "_exterior": {
+   "overhang_mm2": 52.19,
+   "overhang_by_z": {
+    "0": 10.11,
+    "1": 25.12,
+    "2": 6.21,
+    "3": 10.75
+   },
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {
+  "grey&white": 0.0
+ },
+ "base_cap": null
+}

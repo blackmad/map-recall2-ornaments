@@ -1,0 +1,87 @@
+{
+ "dropped_slivers": {
+  "blue": 0,
+  "brown": 0,
+  "charcoal": 0,
+  "grey": 0,
+  "white": 0
+ },
+ "name": "ark-520-mix-noboat",
+ "size_mm": [
+  90.2,
+  31.3,
+  19.0
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "white": "EEEBE3",
+  "grey": "8E8E88",
+  "charcoal": "2A2C30",
+  "brown": "4B2E24",
+  "blue": "3D6F9C"
+ },
+ "parts": {
+  "blue": {
+   "watertight": true,
+   "volume_mm3": 3617.4,
+   "bodies": 3,
+   "overhang_mm2": 258.3
+  },
+  "brown": {
+   "watertight": true,
+   "volume_mm3": 305.2,
+   "bodies": 21,
+   "overhang_mm2": 219.8
+  },
+  "charcoal": {
+   "watertight": true,
+   "volume_mm3": 2622.5,
+   "bodies": 2,
+   "overhang_mm2": 1843.2
+  },
+  "grey": {
+   "watertight": true,
+   "volume_mm3": 5064.5,
+   "bodies": 24,
+   "overhang_mm2": 1918.9
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 12599.1,
+   "bodies": 5,
+   "overhang_mm2": 1708.8
+  },
+  "_exterior": {
+   "overhang_mm2": 312.55,
+   "overhang_by_z": {
+    "2": 3.73,
+    "4": 2.65,
+    "5": 6.54,
+    "6": 2.28,
+    "7": 9.83,
+    "8": 0.27,
+    "10": 8.72,
+    "11": 44.61,
+    "12": 220.17,
+    "13": 0.44,
+    "14": 2.72,
+    "15": 7.19,
+    "16": 3.39
+   },
+   "bodies": 3
+  }
+ },
+ "overlaps_mm3": {
+  "blue&brown": 0.0,
+  "blue&charcoal": 0.0,
+  "blue&grey": 0.0,
+  "blue&white": 0.0,
+  "brown&charcoal": -0.0,
+  "brown&grey": 0.0,
+  "brown&white": 0.0,
+  "charcoal&grey": 0.0,
+  "charcoal&white": 0.0,
+  "grey&white": -0.0
+ },
+ "base_cap": null
+}
