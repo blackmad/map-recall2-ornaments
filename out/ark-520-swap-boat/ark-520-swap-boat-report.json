@@ -1,0 +1,57 @@
+{
+ "dropped_slivers": {
+  "charcoal": 0,
+  "white": 0,
+  "lightgrey": 0
+ },
+ "name": "ark-520-swap-boat",
+ "size_mm": [
+  8.3,
+  20.6,
+  5.3
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "lightgrey": "C9CBC8",
+  "white": "EEEBE3",
+  "charcoal": "2A2C30"
+ },
+ "parts": {
+  "charcoal": {
+   "watertight": true,
+   "volume_mm3": 10.2,
+   "bodies": 3,
+   "overhang_mm2": 24.8
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 4.7,
+   "bodies": 1,
+   "overhang_mm2": 12.2
+  },
+  "lightgrey": {
+   "watertight": true,
+   "volume_mm3": 371.7,
+   "bodies": 1,
+   "overhang_mm2": 48.1
+  },
+  "_exterior": {
+   "overhang_mm2": 59.99,
+   "overhang_by_z": {
+    "0": 5.67,
+    "1": 23.71,
+    "2": 18.17,
+    "3": 11.92,
+    "4": 0.41,
+    "5": 0.11
+   },
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {
+  "charcoal&white": 0.0,
+  "charcoal&lightgrey": 0.0,
+  "white&lightgrey": 0.0
+ },
+ "base_cap": null
+}

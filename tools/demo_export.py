@@ -16,8 +16,16 @@ for d in sorted(glob.glob(f'{ROOT}/out/*/')):
             import numpy as np
             k = 'wheel-' + k; m.apply_transform(np.array(json.load(open(os.path.join(os.path.dirname(f), 'pose.json')))['matrix']))
             m.apply_translation([0, 0, BOAT_Z])
-        parts.append(dict(k=k, hex=h, p=base64.b64encode(m.vertices.astype('<f4').tobytes()).decode(),
-                          i=base64.b64encode(m.faces.astype('<u4').tobytes()).decode()))
+        sw = os.path.join(os.path.dirname(f), 'swap.json')
+        if k == 'bluegrey' and os.path.exists(sw):   # one slot, spool swapped mid-print: show blue below, grey above
+            sj = json.load(open(sw)); z = sj['swap_z_mm']
+            pieces = [('blue', sj['below_hex'], m.slice_plane([0, 0, z], [0, 0, -1], cap=True)),
+                      ('grey', sj['above_hex'], m.slice_plane([0, 0, z], [0, 0, 1], cap=True))]
+        else:
+            pieces = [(k, h, m)]
+        for k, h, m in pieces:
+            parts.append(dict(k=k, hex=h, p=base64.b64encode(m.vertices.astype('<f4').tobytes()).decode(),
+                              i=base64.b64encode(m.faces.astype('<u4').tobytes()).decode()))
     json.dump(dict(parts=parts), open(f'{D}/models/{n}.json', 'w'))
     rep = json.load(open(f'{d}/{n}-report.json'))
     meta[n] = dict(size=rep['size_mm'], scale=rep['scale'], colours=rep['extruders'], overhang=round(rep['parts']['_exterior']['overhang_mm2']))

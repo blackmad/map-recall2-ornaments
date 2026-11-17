@@ -18,15 +18,20 @@ import orn
 from orn import box
 
 SIZE = os.environ.get('ORN_SIZE', 'ornament')
+SWAP = os.environ.get('ORN_SWAP', '0') == '1'      # 4 slots, one spool swap: slot 2 prints the blue water plate, then a pause
+                                                   # at the plate top swaps that spool to grey for the hull, deck and vents
 MIX = os.environ.get('ORN_MIX', '0') == '1'        # 5 slots: blue water AND brown frames; grey is mixed from white+black by the user
 BLUE = MIX or os.environ.get('ORN_BLUE', '0') == '1'  # blue water (and solar panels); without MIX frames/pots/chairs go charcoal
 BOAT = os.environ.get('ORN_NOBOAT', '0') != '1'    # house only: no sloop, no pins, water trimmed to the ark
-NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-mix' if MIX else '-blue' if BLUE else '') + ('' if BOAT else '-noboat')
-PALETTE = ([('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24'), ('blue', '3D6F9C')] if MIX else
+NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-swap' if SWAP else '-mix' if MIX else '-blue' if BLUE else '') + ('' if BOAT else '-noboat')
+PALETTE = ([('white', 'EEEBE3'), ('bluegrey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')] if SWAP else
+           [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24'), ('blue', '3D6F9C')] if MIX else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('blue', '3D6F9C')] if BLUE else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')])
 def C(c):
     """Logical colour -> palette key for this variant."""
+    if SWAP:   # water below the plate top and grey above it share slot 2; the solar panels go charcoal
+        return {'grey': 'bluegrey', 'water': 'bluegrey', 'solar': 'charcoal'}.get(c, c)
     if c == 'brown' and BLUE and not MIX: return 'charcoal'
     if c in ('water', 'solar'): return 'blue' if BLUE else 'charcoal'
     return c
@@ -316,5 +321,13 @@ if SIZE == 'ornament':
         m.add('charcoal', t)
     print('eyelets at x', round(com[0] - a, 2), round(com[0] + a, 2), 'y', round(com[1], 2))
 parts, summary = orn.finish(m, S, out, ring=False)
+if SWAP:   # the spool swap height (mm above the bed): only the water plate lies below it
+    sw = parts['bluegrey']; zs = PLATE * S
+    below = sw.vertices[:, 2] < zs - 1e-3
+    others_below = [k for k, t in parts.items() if k != 'bluegrey' and t.vertices[:, 2].min() < zs - 1e-3]
+    assert not others_below, others_below
+    json.dump(dict(swap_z_mm=round(zs, 3), below='blue', above='grey', below_hex='3D6F9C', above_hex='8E8E88'),
+              open(os.path.join(out, 'swap.json'), 'w'))
+    print('swap at', round(zs, 2), 'mm')
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:200])
 

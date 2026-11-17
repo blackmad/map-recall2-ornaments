@@ -138,6 +138,36 @@
   },
   "overhang": 1521
  },
+ "ark-520-model-swap-noboat": {
+  "size": [
+   207.6,
+   72.0,
+   38.4
+  ],
+  "scale": "1:104",
+  "colours": {
+   "white": "EEEBE3",
+   "bluegrey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 1519
+ },
+ "ark-520-model-swap": {
+  "size": [
+   230.0,
+   71.9,
+   38.4
+  ],
+  "scale": "1:104",
+  "colours": {
+   "white": "EEEBE3",
+   "bluegrey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 1519
+ },
  "ark-520-model": {
   "size": [
    230.0,
@@ -167,6 +197,36 @@
    "brown": "4B2E24"
   },
   "overhang": 312
+ },
+ "ark-520-swap-noboat": {
+  "size": [
+   90.2,
+   31.3,
+   19.0
+  ],
+  "scale": "1:240",
+  "colours": {
+   "white": "EEEBE3",
+   "bluegrey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 310
+ },
+ "ark-520-swap": {
+  "size": [
+   100.0,
+   31.2,
+   19.0
+  ],
+  "scale": "1:240",
+  "colours": {
+   "white": "EEEBE3",
+   "bluegrey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 310
  },
  "ark-520": {
   "size": [

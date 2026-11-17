@@ -1,0 +1,75 @@
+{
+ "dropped_slivers": {
+  "brown": 0,
+  "charcoal": 0,
+  "bluegrey": 0,
+  "white": 0
+ },
+ "name": "ark-520-swap-noboat",
+ "size_mm": [
+  90.2,
+  31.3,
+  19.0
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "white": "EEEBE3",
+  "bluegrey": "8E8E88",
+  "charcoal": "2A2C30",
+  "brown": "4B2E24"
+ },
+ "parts": {
+  "brown": {
+   "watertight": true,
+   "volume_mm3": 305.2,
+   "bodies": 21,
+   "overhang_mm2": 219.8
+  },
+  "charcoal": {
+   "watertight": true,
+   "volume_mm3": 2853.9,
+   "bodies": 2,
+   "overhang_mm2": 1840.9
+  },
+  "bluegrey": {
+   "watertight": true,
+   "volume_mm3": 8450.5,
+   "bodies": 25,
+   "overhang_mm2": 1918.9
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 12599.1,
+   "bodies": 5,
+   "overhang_mm2": 1708.8
+  },
+  "_exterior": {
+   "overhang_mm2": 310.39,
+   "overhang_by_z": {
+    "2": 3.73,
+    "4": 2.65,
+    "5": 6.54,
+    "6": 2.28,
+    "7": 9.83,
+    "8": 0.27,
+    "10": 8.72,
+    "11": 44.61,
+    "12": 220.17,
+    "13": 0.44,
+    "14": 6.06,
+    "15": 1.68,
+    "16": 3.39
+   },
+   "bodies": 3
+  }
+ },
+ "overlaps_mm3": {
+  "brown&charcoal": 0.0,
+  "brown&bluegrey": 0.0,
+  "brown&white": 0.0,
+  "charcoal&bluegrey": 0.0,
+  "charcoal&white": 0.0,
+  "bluegrey&white": -0.0
+ },
+ "base_cap": null
+}
