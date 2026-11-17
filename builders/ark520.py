@@ -192,9 +192,9 @@ if BOAT:
     # Open electric canal sloop (user's reference: the blue Giethoorn rental boat, printed light grey): raked bow,
     # closed foredeck with a hatch, a wrap-round cushioned lounge, a white table, and a console on the starboard
     # side with a steering wheel. Its own palette, the same for every ark variant.
-    BPAL = [('lightgrey', 'C9CBC8'), ('white', 'EEEBE3'), ('charcoal', '2A2C30'), ('blue', '2F4F86')]
+    BPAL = [('lightgrey', 'C9CBC8'), ('white', 'EEEBE3'), ('charcoal', '2A2C30')]   # cushions light grey, not sea blue (user)
     b = orn.Model(NAME + '-boat', BPAL)
-    b.set_priority(['lightgrey', 'white', 'blue', 'charcoal'])
+    b.set_priority(['lightgrey', 'white', 'charcoal'])
     FB = 0.75                                          # gunwale height
     def bplan(t):
         """Hull plan at height fraction t (0 bottom .. 1 gunwale): bilge-rounded at the bottom, stem raked forward."""
@@ -262,7 +262,7 @@ if BOAT:
         c = trimesh.creation.cylinder(radius=HOLE_D / 2 * MM, height=HOLE_H * MM * 2, sections=24); c.apply_translation([x, y, 0]); holes.append(orn.to_manifold(c))
     holes = orn.union(holes)
     b.add('lightgrey', hull_b - holes); b.add('lightgrey', console); b.add('lightgrey', floor_)
-    b.add('blue', seats + backs); b.add('white', table); b.add('charcoal', rub + hatch)
+    b.add('lightgrey', seats + backs); b.add('white', table); b.add('charcoal', rub + hatch)
 
     if SPIN:
         # ------------------------------------------------------------ the steering wheel (separate, spins on its axle)
