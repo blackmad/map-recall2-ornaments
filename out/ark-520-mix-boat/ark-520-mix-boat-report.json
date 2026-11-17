@@ -1,45 +1,68 @@
 {
  "dropped_slivers": {
-  "grey": 0,
-  "white": 0
+  "charcoal": 0,
+  "blue": 0,
+  "white": 0,
+  "lightgrey": 0
  },
  "name": "ark-520-mix-boat",
  "size_mm": [
   8.3,
-  22.7,
-  5.2
+  20.6,
+  5.3
  ],
  "scale": "1:240",
  "extruders": {
+  "lightgrey": "C9CBC8",
   "white": "EEEBE3",
-  "grey": "8E8E88"
+  "charcoal": "2A2C30",
+  "blue": "2F4F86"
  },
  "parts": {
-  "grey": {
+  "charcoal": {
    "watertight": true,
-   "volume_mm3": 45.6,
-   "bodies": 2,
-   "overhang_mm2": 88.4
+   "volume_mm3": 10.2,
+   "bodies": 3,
+   "overhang_mm2": 24.8
+  },
+  "blue": {
+   "watertight": true,
+   "volume_mm3": 83.0,
+   "bodies": 1,
+   "overhang_mm2": 56.8
   },
   "white": {
    "watertight": true,
-   "volume_mm3": 320.3,
-   "bodies": 2,
-   "overhang_mm2": 53.7
+   "volume_mm3": 4.7,
+   "bodies": 1,
+   "overhang_mm2": 12.2
+  },
+  "lightgrey": {
+   "watertight": true,
+   "volume_mm3": 288.7,
+   "bodies": 1,
+   "overhang_mm2": 48.1
   },
   "_exterior": {
-   "overhang_mm2": 52.19,
+   "overhang_mm2": 59.99,
    "overhang_by_z": {
-    "0": 10.11,
-    "1": 25.12,
-    "2": 6.21,
-    "3": 10.75
+    "0": 5.67,
+    "1": 23.71,
+    "2": 18.17,
+    "3": 11.92,
+    "4": 0.41,
+    "5": 0.11
    },
    "bodies": 1
   }
  },
  "overlaps_mm3": {
-  "grey&white": 0.0
+  "charcoal&blue": 0.0,
+  "charcoal&white": 0.0,
+  "charcoal&lightgrey": 0.0,
+  "blue&white": 0.0,
+  "blue&lightgrey": 0.003,
+  "white&lightgrey": 0.0
  },
  "base_cap": null
 }

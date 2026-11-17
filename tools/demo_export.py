@@ -5,13 +5,17 @@ D = os.path.join(ROOT, 'demo'); os.makedirs(f'{D}/models', exist_ok=True)
 meta = {}
 for d in sorted(glob.glob(f'{ROOT}/out/*/')):
     n = os.path.basename(d.rstrip('/')); parts = []
-    BOAT_Z = 2.0 if n.endswith('-model') else 1.2
-    if n.endswith('-boat'): continue                   # shown moored inside its houseboat's model
-    for f in sorted(glob.glob(f'{d}/*.stl')) + sorted(glob.glob(f'{d}/base/*.stl')) + sorted(glob.glob(f'{d.rstrip("/")}-boat/*.stl')):
+    BOAT_Z = 2.0 if '-model' in n else 1.2
+    if n.endswith('-boat') or n.endswith('-wheel'): continue   # shown moored inside its houseboat's model
+    for f in sorted(glob.glob(f'{d}/*.stl')) + sorted(glob.glob(f'{d}/base/*.stl')) + sorted(glob.glob(f'{d.rstrip("/")}-boat/*.stl')) + sorted(glob.glob(f'{d.rstrip("/")}-wheel/*.stl')):
         k, h = os.path.basename(f)[:-4].split('__')[1:]
         m = trimesh.load(f)
         if '/base/' in f: k = 'base'; m.apply_translation([0, 0, -12])     # exploded view: the snap bottom below
         if '-boat/' in f: k = 'boat-' + k; m.apply_translation([0, 0, BOAT_Z])  # moored on its pins (water plate thickness)
+        if '-wheel/' in f:                                                   # steering wheel on its console axle
+            import numpy as np
+            k = 'wheel-' + k; m.apply_transform(np.array(json.load(open(os.path.join(os.path.dirname(f), 'pose.json')))['matrix']))
+            m.apply_translation([0, 0, BOAT_Z])
         parts.append(dict(k=k, hex=h, p=base64.b64encode(m.vertices.astype('<f4').tobytes()).decode(),
                           i=base64.b64encode(m.faces.astype('<u4').tobytes()).decode()))
     json.dump(dict(parts=parts), open(f'{D}/models/{n}.json', 'w'))

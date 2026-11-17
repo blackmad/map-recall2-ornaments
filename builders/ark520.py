@@ -187,35 +187,107 @@ for col, s_ in P: m.add(C(col), s_)
 
 if BOAT:
     # ---------------------------------------------------------------- the sloop (separate print)
-    b = orn.Model(NAME + '-boat', PALETTE)
-    b.set_priority([k for k, _ in PALETTE])
-    plan = SP([(BX - BEAM / 2, BY0), (BX + BEAM / 2, BY0), (BX + BEAM / 2, 3.1), (BX + 0.5, 4.25), (BX, BY1), (BX - 0.5, 4.25), (BX - BEAM / 2, 3.1)])
-    plan = plan.buffer(-0.12).buffer(0.12)
-    FB = 0.8                                           # freeboard
-    hull_b = []
-    NF = 20
-    for i in range(NF):                                # flared hull: bottom inset 0.25 m, rounded bilge
-        z0, z1 = FB * 0.4 * i / NF, FB * 0.4 * (i + 1) / NF
-        t = (i + 0.5) / NF
-        hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(-0.25 * (1 - math.sin(t * math.pi / 2))), z1 - z0 + 0.002)).translate([0, 0, z0]))
-    hull_b.append(orn.to_manifold(trimesh.creation.extrude_polygon(plan, FB * 0.6)).translate([0, 0, FB * 0.4]))
-    hull_b = orn.union(hull_b)
-    # open boat (user: uncovered): hollow hull with a floor, stern bench, mid thwart and a small console
-    WB = max(0.1, 0.9 * MM)                             # hull wall
-    FLOOR = 0.42                                        # floor top (solid below, so the pin holes stay hidden)
-    well = plan.buffer(-WB) & sbox(BX - 2, BY0 + WB, BX + 2, 3.3)
+    # Open electric canal sloop (user's reference: the blue Giethoorn rental boat, printed light grey): raked bow,
+    # closed foredeck with a hatch, a wrap-round cushioned lounge, a white table, and a console on the starboard
+    # side with a steering wheel. Its own palette, the same for every ark variant.
+    BPAL = [('lightgrey', 'C9CBC8'), ('white', 'EEEBE3'), ('charcoal', '2A2C30'), ('blue', '2F4F86')]
+    b = orn.Model(NAME + '-boat', BPAL)
+    b.set_priority(['lightgrey', 'white', 'blue', 'charcoal'])
+    FB = 0.75                                          # gunwale height
+    def bplan(t):
+        """Hull plan at height fraction t (0 bottom .. 1 gunwale): bilge-rounded at the bottom, stem raked forward."""
+        inset = 0.22 * (1 - math.sin(min(1.0, t / 0.45) * math.pi / 2))
+        tip = 4.35 + 0.35 * t                          # bow tip y: the stem leans forward as it rises
+        half = BEAM / 2
+        p = SP([(BX - half, BY0), (BX + half, BY0), (BX + half, 2.9), (BX + half * 0.72, 3.75), (BX, tip),
+                (BX - half * 0.72, 3.75), (BX - half, 2.9)]).buffer(-0.15).buffer(0.15)
+        return p.buffer(-inset)
+    NF = 24
+    hull_b = orn.union([orn.to_manifold(trimesh.creation.extrude_polygon(bplan((i + 0.5) / NF), FB / NF + 0.002)).translate([0, 0, FB * i / NF])
+                        for i in range(NF)])
+    top = bplan(1.0)
+    WB = max(0.07, 0.9 * MM)                           # hull wall
+    FLOOR = 0.4                                        # cockpit floor (solid below: the pin holes stay hidden)
+    FD = 3.55                                          # foredeck starts here
+    well = top.buffer(-WB) & sbox(BX - 2, BY0 + WB, BX + 2, FD)
     hull_b = hull_b - orn.to_manifold(trimesh.creation.extrude_polygon(well, 2.0)).translate([0, 0, FLOOR])
-    seats = orn.union([orn.to_manifold(trimesh.creation.extrude_polygon(well & sbox(BX - 2, y0, BX + 2, y1), 0.22)).translate([0, 0, FLOOR - 0.01])
-                       for y0, y1 in ((BY0, BY0 + 0.55), (1.45, 1.85))])
+    xl, xr = well.bounds[0], well.bounds[2]
+    # lounge: U of seats with back cushions against the hull, a short bench forward on the starboard side
+    ST, BK = FLOOR + 0.2, FB + 0.12                    # seat top, back-cushion top
+    SD, BT = 0.5, max(0.1, 1.0 * MM)                   # seat depth, back-cushion thickness
+    seat_regions = [sbox(xl - 0.1, BY0, xr + 0.1, BY0 + WB + SD),          # stern bench
+                    sbox(xl - 0.1, BY0, xl + SD, FD + 0.1),                 # port side, full length
+                    sbox(xl - 0.1, FD - SD, xr + 0.1, FD + 0.1),            # bow bench across
+                    sbox(xr - SD, 2.1, xr + 0.1, FD + 0.1)]                 # starboard, forward of the table
+    seats = orn.union([orn.to_manifold(trimesh.creation.extrude_polygon(well & r, ST - FLOOR + 0.01)).translate([0, 0, FLOOR - 0.01])
+                       for r in seat_regions])
+    backs_poly = well.difference(well.buffer(-BT, join_style=2))
+    back_regions = [sbox(xl - 0.1, BY0, xr + 0.1, BY0 + WB + BT + 0.01), sbox(xl - 0.1, BY0, xl + BT, FD + 0.1),
+                    sbox(xl - 0.1, FD - BT, xr + 0.1, FD + 0.1), sbox(xr - BT, 2.1, xr + 0.1, FD + 0.1)]
+    backs = orn.union([orn.to_manifold(trimesh.creation.extrude_polygon(well.buffer(0.02) & r, BK - FLOOR)).translate([0, 0, FLOOR - 0.01])
+                       for r in back_regions])
     floor_ = orn.to_manifold(trimesh.creation.extrude_polygon(well, max(0.03, 0.25 * MM))).translate([0, 0, FLOOR - 0.01])
-    console = box(BX + 0.12, BX + 0.62, 2.3, 2.75, FLOOR - 0.01, FB + 0.25) - box(BX + 0.1, BX + 0.64, 2.3, 2.5, FB + 0.05, FB + 0.3)
-    rub = orn.to_manifold(trimesh.creation.extrude_polygon(plan.buffer(0.05).difference(plan.buffer(-0.08)), 0.1)).translate([0, 0, FB - 0.18])
-    motor = box(BX - 0.18, BX + 0.18, BY0 - 0.45, BY0 + 0.02, 0.35, FB + 0.45) + box(BX - 0.07, BX + 0.07, BY0 - 0.3, BY0 - 0.12, 0.0, 0.4)
+    # table (white) on a pedestal, in the middle of the lounge
+    TW = max(0.12, 1.0 * MM)
+    table = box(BX - 0.45, BX + 0.25, 1.75, 2.75, ST + 0.18, ST + 0.24) + box(BX - 0.1 - TW / 2, BX - 0.1 + TW / 2, 2.25 - TW / 2, 2.25 + TW / 2, FLOOR - 0.01, ST + 0.2)
+    # console: starboard, its aft face raked back by WA so the wheel faces the helmsman on the stern bench
+    WA = math.radians(25)
+    cx, cw = xr - 0.5, 0.6                             # console centre x and width
+    cy0, czA, cL = 0.95, ST + 0.05, 0.62              # foot of the raked face (y, z) and its length
+    cyB, czB = cy0 + cL * math.sin(WA), czA + cL * math.cos(WA)
+    console = orn.yz_prism([(cy0, FLOOR - 0.01), (cy0 + 0.75, FLOOR - 0.01), (cy0 + 0.75, czB), (cyB, czB), (cy0, czA)], cx - cw / 2, cx + cw / 2)
+    # wheel axle point on the raked face, axis into the console (forward and down)
+    PW = np.array([cx, cy0 + 0.55 * cL * math.sin(WA), czA + 0.55 * cL * math.cos(WA)])
+    AX = np.array([0.0, math.cos(WA), -math.sin(WA)])
+    SPIN = SIZE != 'ornament'                          # 1:240 is too small for a working wheel: it gets a moulded one
+    if SPIN:
+        AX_D, AX_CLR, AX_L = 1.7, 0.2, 3.4             # axle diameter, radial clearance, length (mm)
+        c = trimesh.creation.cylinder(radius=(AX_D / 2 + AX_CLR) * MM, height=2 * (AX_L + 0.4) * MM, sections=32)
+        Rm = trimesh.geometry.align_vectors([0, 0, 1], AX); c.apply_transform(Rm); c.apply_translation(PW)
+        console = console - orn.to_manifold(c)
+    else:
+        disc = trimesh.creation.annulus(r_min=0.12, r_max=0.3, height=0.08, sections=32)
+        disc = trimesh.util.concatenate([disc, trimesh.creation.cylinder(radius=0.07, height=0.16, sections=16)])
+        Rm = trimesh.geometry.align_vectors([0, 0, 1], AX); disc.apply_transform(Rm); disc.apply_translation(PW - AX * 0.06)
+        spokes = [box(-0.03, 0.03, -0.3, 0.3, -0.03, 0.03), box(-0.3, 0.3, -0.03, 0.03, -0.03, 0.03)]
+        sp = orn.to_trimesh(orn.union(spokes)); sp.apply_transform(Rm); sp.apply_translation(PW - AX * 0.06)
+        b.add('charcoal', orn.to_manifold(disc) + orn.to_manifold(sp))
+    # foredeck hatch, rub strake, holes for the mooring pins
+    hatch = orn.to_manifold(trimesh.creation.cylinder(radius=0.22, height=0.06, sections=32)).translate([BX - 0.15, 3.95, FB + 0.02])
+    rub = orn.to_manifold(trimesh.creation.extrude_polygon(bplan(0.85).buffer(0.05).difference(bplan(0.85).buffer(-0.05)), 0.09)).translate([0, 0, FB * 0.8])
     holes = []
     for x, y in PINS:
         c = trimesh.creation.cylinder(radius=HOLE_D / 2 * MM, height=HOLE_H * MM * 2, sections=24); c.apply_translation([x, y, 0]); holes.append(orn.to_manifold(c))
     holes = orn.union(holes)
-    b.add('white', hull_b - holes); b.add('white', rub); b.add('grey', floor_ + seats); b.add('white', console); b.add('grey', motor - holes)
+    b.add('lightgrey', hull_b - holes); b.add('lightgrey', console); b.add('lightgrey', floor_)
+    b.add('blue', seats + backs); b.add('white', table); b.add('charcoal', rub + hatch)
+
+    if SPIN:
+        # ------------------------------------------------------------ the steering wheel (separate, spins on its axle)
+        # printed flat, spokes on the bed and the axle up; it drops into the console's raked face, which holds it by
+        # gravity. Oversized to 8 mm (~0.8 m) so the rim and spokes print and it turns by finger.
+        RIM_OD, RIM_W, RIM_H = 8.0, 0.9, 1.0
+        HUB_D, HUB_H, SPK_W, SPK_H, NSPK = 3.0, 1.7, 0.75, 0.8, 6
+        wm = []
+        an = trimesh.creation.annulus(r_min=RIM_OD / 2 - RIM_W, r_max=RIM_OD / 2, height=RIM_H, sections=64); an.apply_translation([0, 0, RIM_H / 2]); wm.append(an)
+        hub = trimesh.creation.cylinder(radius=HUB_D / 2, height=HUB_H, sections=40); hub.apply_translation([0, 0, HUB_H / 2]); wm.append(hub)
+        axle = trimesh.creation.cylinder(radius=AX_D / 2, height=AX_L, sections=32); axle.apply_translation([0, 0, HUB_H + AX_L / 2 - 0.01]); wm.append(axle)
+        cham = trimesh.creation.cone(radius=AX_D / 2, height=0.5, sections=32); cham.apply_translation([0, 0, HUB_H + AX_L - 0.01])
+        for i in range(NSPK):
+            a = 2 * math.pi * i / NSPK
+            s_ = trimesh.creation.box([RIM_OD / 2 - RIM_W / 2, SPK_W, SPK_H]); s_.apply_translation([(RIM_OD / 2 - RIM_W / 2) / 2, 0, SPK_H / 2])
+            s_.apply_transform(trimesh.transformations.rotation_matrix(a, [0, 0, 1])); wm.append(s_)
+            k = trimesh.creation.cylinder(radius=0.45, height=RIM_H + 0.3, sections=20)   # grip knob on the rim at each spoke
+            k.apply_translation([(RIM_OD / 2 - RIM_W / 2) * math.cos(a), (RIM_OD / 2 - RIM_W / 2) * math.sin(a), (RIM_H + 0.3) / 2]); wm.append(k)
+        wheel = orn.union([orn.to_manifold(t) for t in wm])
+        w = orn.Model(NAME + '-wheel', [('brown', '4B2E24')])
+        w.add('brown', wheel.scale([MM] * 3))           # finish scales m -> mm
+        orn.finish(w, S, os.path.join(ROOT, 'out', NAME + '-wheel'), ring=False)
+        # pose for the demo: wheel +z (axle) along AX, hub back face 0.1 mm off the console face, in boat print mm
+        Rw = trimesh.geometry.align_vectors([0, 0, 1], AX)
+        Tw = Rw.copy(); Tw[:3, 3] = PW * S - AX * (HUB_H + 0.1)
+        json.dump(dict(matrix=Tw.tolist()), open(os.path.join(ROOT, 'out', NAME + '-wheel', 'pose.json'), 'w'))
+        print('wheel', RIM_OD, 'mm; axle', AX_D, 'in', AX_D + 2 * AX_CLR, 'mm hole')
 
 out = os.path.join(ROOT, 'out', NAME)
 # centre of mass, measured on the finished print parts (the pre-resolve estimate was off by ~0.07 m = 4 degrees)

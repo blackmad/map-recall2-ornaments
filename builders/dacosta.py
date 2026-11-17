@@ -225,26 +225,36 @@ for F in FLOORS:
         ua, ub = u4(a, b)
         OPEN['E4'].append(dict(u0=ua, u1=ub, w0=F + sill, w1=F + HEAD, s=s4, kind=kind, F=F))
 balc_zones = []
-def slab_and_rail(fr, s_w, ua, ub, zf, depth, ends, brackets=True):
+def slab_and_rail(fr, s_w, ua, ub, zf, depth, ends, brackets=True, face=None):
     adds.append(('white', fr.box(ua, ub, zf - SLAB, zf, s_w - TIN, s_w + depth)))
     adds.extend(open_rail(fr, ua, ub, s_w + depth, zf, side_ends=ends, s_wall=s_w))
     if brackets:     # white 45-degree brackets every ~2 m (the photographed white braces)
         nbk = max(2, int(math.ceil((ub - ua) / 2.0)) + 1)
-        zt = zf - SLAB
+        zt = zf - SLAB; zb = zt - depth - TIN; BW, GAP = 0.18, 0.12
+        # a brace lands on brick, never across a window below it (user, 2026-11-17): openings on this face whose
+        # height overlaps the brace are blocked, and each brace slides to the nearest free spot along the slab
+        blocked = [(o['u0'] - GAP - BW, o['u1'] + GAP) for o in OPEN.get(face, []) if o['w1'] > zb and o['w0'] < zt]
+        def free(u): return ua <= u <= ub - BW and not any(b0 < u < b1 for b0, b1 in blocked)
+        cands = sorted({round(c, 3) for c in [ua, ub - BW] + [x for b in blocked for x in b] if free(c)})
+        placed = []
         for i in range(nbk):
-            uk = ua + (ub - ua - 0.18) * i / (nbk - 1)
-            adds.append(('white', fr.side_prism([(s_w - TIN, zt), (s_w + depth, zt), (s_w - TIN, zt - depth - TIN)], uk, uk + 0.18)))
+            want = ua + (ub - ua - BW) * i / (nbk - 1)
+            if not cands: break
+            uk = want if free(want) else min(cands, key=lambda c: abs(c - want))
+            if all(abs(uk - p) > 0.6 for p in placed): placed.append(uk)
+        for uk in placed:
+            adds.append(('white', fr.side_prism([(s_w - TIN, zt), (s_w + depth, zt), (s_w - TIN, zb)], uk, uk + BW)))
 SB0, SB1 = 0.55, 2.15                 # side balcony on E3 (plan: 1.57 m, by the rear corner), photo: one per floor
 PW = 0.2                              # rust post width
 for i, F in enumerate(FLOORS):
     if i < 2:   # floors 1-2: rear balcony on the party-wall half + side balcony
         ua, ub = u4(L4 - 4.37, L4)
-        slab_and_rail(fr4, s4, ua, ub, F, 0.95, ends=[ua, ub]); balc_zones.append((ua, ub, F))
+        slab_and_rail(fr4, s4, ua, ub, F, 0.95, ends=[ua, ub], face='E4'); balc_zones.append((ua, ub, F))
         ua3, ub3 = u3(SB0, SB1)
         slab_and_rail(fr3, s3, ua3, ub3, F, WD, ends=[ua3, ub3], brackets=False)
     else:       # floor 3: whole rear, past the corner, wrapping 2.98 m down the side
         ua, ub = u4(-WD, L4)
-        slab_and_rail(fr4, s4, ua, ub, F, BD, ends=[ub if d4 > 0 else ua]); balc_zones.append((ua, ub, F))
+        slab_and_rail(fr4, s4, ua, ub, F, BD, ends=[ub if d4 > 0 else ua], face='E4'); balc_zones.append((ua, ub, F))
         ua3, ub3 = u3(-BD, 2.98)
         slab_and_rail(fr3, s3, ua3, ub3, F, WD, ends=[ub3 if d3 > 0 else ua3], brackets=False)
     # French door from the bedroom onto the side balcony (plan + photo)

@@ -1,0 +1,30 @@
+{
+ "dropped_slivers": {
+  "brown": 0
+ },
+ "name": "ark-520-model-wheel",
+ "size_mm": [
+  8.0,
+  8.0,
+  5.1
+ ],
+ "scale": "1:104",
+ "extruders": {
+  "brown": "4B2E24"
+ },
+ "parts": {
+  "brown": {
+   "watertight": true,
+   "volume_mm3": 46.6,
+   "bodies": 1,
+   "overhang_mm2": 0.0
+  },
+  "_exterior": {
+   "overhang_mm2": 0.0,
+   "overhang_by_z": {},
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {},
+ "base_cap": null
+}
