@@ -32,8 +32,8 @@ ROLES = dict(brick='mass', slate='roof', glass='opening', red='opening', white='
              dark='drop', bronze='drop', green='drop')
 COLOUR = dict(brick='brick', slate='slate', glass='dark', red='dark')
 B = glbbuild.Build(NAME, os.path.join(ROOT, 'work/da-costakade-13.raw.glb'), ROLES, PALETTE, COLOUR,
-                   float(os.environ.get('ORN_HEIGHT_MM', 60)), lit=False, res=0.04)
-S, MM = B.S, B.MM
+                   float(os.environ.get('ORN_HEIGHT_MM', 88)), lit=False, res=0.04)
+S, MM = B.S, B.MM     # ORN_HEIGHT_MM 88 -> ~10 cm overall with the ring (user 2026-11-17)
 TIN, RECESS, PANE, WALL = B.TIN, B.RECESS, B.PANE, B.WALL
 FW = max(0.15, 0.5 * MM)            # white frame bar
 RT = 0.55 * MM                      # railing bar
@@ -115,16 +115,9 @@ for fro, hull, s_w in B.opening_boxes:
 for k in OPEN: OPEN[k].sort(key=lambda o: (o['w0'], o['u0']))
 print({k: len(v) for k, v in OPEN.items()})
 # rear (E4): the stair column's windows sit half a level low in the game model; the user wants them on the floor rows
-ROWS4 = [(4.7, 6.65), (8.1, 10.05), (11.5, 13.45)]
-e4 = []
-for o in OPEN['E4']:
-    if o['w0'] < 3: continue                     # ground floor rebuilt below
-    r0, r1 = min(ROWS4, key=lambda r: abs(r[0] - o['w0']))
-    e4.append(dict(o, w0=r0, w1=r1))
+# rear (E4): upper floors are laid out from the makelaar plans further down; keep only the ground floor here
 g = [o for o in OPEN['E4'] if o['w0'] < 3]
-if g:                                            # one wide glazed garden door across the two left columns
-    e4.append(dict(g[0], u0=min(o['u0'] for o in g), u1=max(o['u1'] for o in g), w0=0.15, w1=2.95, garden=True))
-OPEN['E4'] = sorted({(round(o['u0'], 2), round(o['w0'], 2)): o for o in e4}.values(), key=lambda o: (o['w0'], o['u0']))
+OPEN['E4'] = [dict(g[0], u0=min(o['u0'] for o in g), u1=max(o['u1'] for o in g), w0=0.15, w1=2.95, garden=True)] if g else []
 
 
 m = orn.Model(NAME, PALETTE)
@@ -187,7 +180,7 @@ fr2 = FAC['E2']['fr']
 P_BAL = max(0.55, 1.9 * MM)
 for o in OPEN['E2']:
     if o['w0'] > 14:      # gable window, moved onto the new gable face and sized from the photo
-        o = dict(o, s=fg['s'], u0=UC - 0.78, u1=UC + 0.78, w0=ZE + 0.45, w1=ZE + 2.25)
+        o = dict(o, s=fg['s'], u0=UC - 0.72, u1=UC + 0.72, w0=14.15 + 0.05, w1=14.15 + 2.5)   # 4th-floor French window (user: entirely on the 4th floor)
         window('E2', o, 'round', mullion=True); continue
     window('E2', o, 'seg', mullion=True)
     if 3.5 < o['w0'] < 12:                               # balconette floors 1-3
@@ -216,10 +209,17 @@ uC3 = C @ fr3.u; uF3 = np.array([1.56, 4.93, 0.0]) @ fr3.u; d3 = np.sign(uF3 - u
 s3, s4 = f3['s'], f4['s']
 BD, WD = 0.97, 1.05
 def along(u_start, d, a, b): return sorted([u_start + d * a, u_start + d * b])
-from collections import Counter     # floor sills = the most common rear sill heights (stair windows sit half a level lower)
-cnt = Counter(round(o['w0'], 1) for o in OPEN['E4'] if o['w0'] > 3)
-lv = sorted(v for v, c in cnt.items() if c >= 2)
-print('rear levels', [round(v, 2) for v in lv])
+FLOORS = [3.95, 7.35, 10.75]          # floor levels 1-3 (the gable French doors and their balconettes sit here)
+HEAD = 2.7                            # rear window heads, floor + 2.7 (game model)
+L4 = abs(uO4 - uC4)
+def u4(a, b): return along(uC4, d4, a, b)       # distances from the E3/E4 corner along the rear
+def u3(a, b): return along(uC3, d3, a, b)       # distances from the E3/E4 corner along the side
+# floors 1-3 rear, from the plans (exterior = plan + 0.3 m wall): wide glazed bedroom door with sidelights,
+# second bedroom window, balcony door at the party-wall end
+for F in FLOORS:
+    for a, b, sill, kind in ((1.15, 3.9, 0.05, 'wide'), (5.1, 6.3, 0.75, 'win'), (7.2, 8.55, 0.05, 'door')):
+        ua, ub = u4(a, b)
+        OPEN['E4'].append(dict(u0=ua, u1=ub, w0=F + sill, w1=F + HEAD, s=s4, kind=kind, F=F))
 balc_zones = []
 def slab_and_rail(fr, s_w, ua, ub, zf, depth, ends, brackets=True):
     adds.append(('white', fr.box(ua, ub, zf - SLAB, zf, s_w - TIN, s_w + depth)))
@@ -230,34 +230,52 @@ def slab_and_rail(fr, s_w, ua, ub, zf, depth, ends, brackets=True):
         for i in range(nbk):
             uk = ua + (ub - ua - 0.18) * i / (nbk - 1)
             adds.append(('white', fr.side_prism([(s_w - TIN, zt), (s_w + depth, zt), (s_w - TIN, zt - depth - TIN)], uk, uk + 0.18)))
-for i, zsill in enumerate(lv):
-    zf = zsill - 0.05
-    if i < len(lv) - 1:   # floors 1-2: rear balcony on the party-wall half + side balcony by the corner
-        ua, ub = along(uO4, -d4, 0.0, 4.37)
-        slab_and_rail(fr4, s4, ua, ub, zf, 0.95, ends=[ua, ub]); balc_zones.append((ua, ub, zsill))
-        ua3, ub3 = along(uC3, d3, 0.2, 1.77)
-        slab_and_rail(fr3, s3, ua3, ub3, zf, WD, ends=[ua3, ub3], brackets=False)
-    else:                 # floor 3: whole rear, past the corner, wrapping 2.98 m down the side
-        ua, ub = along(uC4, d4, -WD, abs(uO4 - uC4))
-        slab_and_rail(fr4, s4, ua, ub, zf, BD, ends=[ub if d4 > 0 else ua]); balc_zones.append((ua, ub, zsill))
-        ua3, ub3 = along(uC3, d3, -BD, 2.98)
-        slab_and_rail(fr3, s3, ua3, ub3, zf, WD, ends=[ub3 if d3 > 0 else ua3], brackets=False)
-# rust posts down to the ground + white diagonal braces under the side balconies
-top_rail = lv[-1] - 0.05 + 1.0
-for ue in (along(uC3, d3, -BD, -BD + 0.2), along(uC3, d3, 1.57, 1.77), along(uC3, d3, 2.78, 2.98)):
-    adds.append(('brick', fr3.box(ue[0], ue[1], 0.0, top_rail, s3 + WD - 0.2, s3 + WD)))
-for zsill in lv:
-    zt = zsill - 0.05 - SLAB
-    for ue in (along(uC3, d3, 1.57, 1.77), along(uC3, d3, 2.78, 2.98), along(uC3, d3, 0.2, 0.4)):
+SB0, SB1 = 0.55, 2.15                 # side balcony on E3 (plan: 1.57 m, by the rear corner), photo: one per floor
+PW = 0.2                              # rust post width
+for i, F in enumerate(FLOORS):
+    if i < 2:   # floors 1-2: rear balcony on the party-wall half + side balcony
+        ua, ub = u4(L4 - 4.37, L4)
+        slab_and_rail(fr4, s4, ua, ub, F, 0.95, ends=[ua, ub]); balc_zones.append((ua, ub, F))
+        ua3, ub3 = u3(SB0, SB1)
+        slab_and_rail(fr3, s3, ua3, ub3, F, WD, ends=[ua3, ub3], brackets=False)
+    else:       # floor 3: whole rear, past the corner, wrapping 2.98 m down the side
+        ua, ub = u4(-WD, L4)
+        slab_and_rail(fr4, s4, ua, ub, F, BD, ends=[ub if d4 > 0 else ua]); balc_zones.append((ua, ub, F))
+        ua3, ub3 = u3(-BD, 2.98)
+        slab_and_rail(fr3, s3, ua3, ub3, F, WD, ends=[ub3 if d3 > 0 else ua3], brackets=False)
+    # French door from the bedroom onto the side balcony (plan + photo)
+    ua3, ub3 = u3(0.8, 1.9)
+    window('E3', dict(u0=ua3, u1=ub3, w0=F + 0.05, w1=F + HEAD, s=s3), 'rect', mullion=True, arch_band=False)
+    # white diagonal braces under both ends of the side balcony
+    zt = F - SLAB
+    for a in (SB0, SB1 - 0.18):
+        ue = u3(a, a + 0.18)
         adds.append(('white', fr3.side_prism([(s3 - TIN, zt), (s3 + WD, zt), (s3 + WD, zt - 0.15), (s3 - TIN, zt - WD - TIN)], ue[0], ue[1])))
+# braces under the free ends of the floor-3 side wrap
+zt = FLOORS[-1] - SLAB
+for a in (2.98 - 0.18, -BD):
+    ue = u3(a, a + 0.18)
+    adds.append(('white', fr3.side_prism([(s3 - TIN, zt), (s3 + WD, zt), (s3 + WD, zt - 0.15), (s3 - TIN, zt - WD - TIN)], ue[0], ue[1])))
+# two rust posts at the balcony's outer corners, ground to a white-framed glass canopy over the top balcony
+ZCAN = FLOORS[-1] + HEAD + 0.25
+for a in (SB0, SB1 - PW):
+    ue = u3(a, a + PW)
+    adds.append(('brick', fr3.box(ue[0], ue[1], 0.0, ZCAN, s3 + WD - PW, s3 + WD)))
+ue = u3(SB0, SB1)
+CT = max(0.12, 0.5 * MM)
+adds.append(('white', fr3.box(ue[0], ue[1], ZCAN, ZCAN + CT, s3 - TIN, s3 + WD)))
 # rear windows: rectangular, Juliet railings where there is no balcony
 for o in OPEN['E4']:
-    window('E4', o, 'rect', mullion=(o['u1'] - o['u0'] > 1.0), arch_band=False)
+    window('E4', o, 'rect', mullion=(o['u1'] - o['u0'] > 1.0 and o.get('kind') != 'wide'), arch_band=False)
     if o.get('garden'):                          # extra mullions on the wide garden door
         for t in (0.25, 0.75):
             uc = o['u0'] + t * (o['u1'] - o['u0'])
             adds.append(('white', fr4.prism(orn.cs_shapely(sbox(uc - FW / 2, o['w0'], uc + FW / 2, o['w1'])), o['s'] - RECESS - TIN, o['s'] - RECESS + 0.1 * MM)))
-    if o['w0'] > 3 and not any(a - 0.1 < o['u0'] and o['u1'] < b + 0.1 and abs(z - o['w0']) < 0.5 for a, b, z in balc_zones):
+    if o.get('kind') == 'wide':                   # sidelights either side of the double door
+        for t in (0.22, 0.78):
+            uc = o['u0'] + t * (o['u1'] - o['u0'])
+            adds.append(('white', fr4.prism(orn.cs_shapely(sbox(uc - FW / 2, o['w0'], uc + FW / 2, o['w1'])), o['s'] - RECESS - TIN, o['s'] - RECESS + 0.1 * MM)))
+    if o['w0'] > 3 and o.get('kind') != 'win' and not any(a - 0.1 < o['u0'] and o['u1'] < b + 0.1 and abs(z - o['F']) < 0.5 for a, b, z in balc_zones):
         ua, ub = o['u0'] - 0.1, o['u1'] + 0.1; zf = o['w0']
         adds.append(('white', fr4.box(ua, ub, zf - SLAB, zf, o['s'] - TIN, o['s'] + 0.32)))
         adds.extend(open_rail(fr4, ua, ub, o['s'] + 0.32, zf, h=0.9, side_ends=[ua, ub], s_wall=o['s']))
@@ -282,6 +300,17 @@ for fk, g, s_w in accents:
     if g.is_empty: continue
     adds.append(('slate', FAC[fk]['fr'].prism(orn.cs_shapely(g), s_w - TIN, s_w + 0.05 * MM)))
 
+# ------------------------------------------------------------------ eaves: cream gutter fascia over a brick dentil row (photo)
+ZEAVE = 14.0
+for fk in ('E1', 'E3', 'E4'):
+    f = FAC[fk]; fr = f['fr']; sw = f['s']; ua, ub = f['u0'] - 0.02, f['u1'] + 0.02
+    prof = [(sw - TIN, ZEAVE - 0.34), (sw, ZEAVE - 0.34), (sw + 0.2, ZEAVE - 0.14), (sw + 0.2, ZEAVE + 0.12), (sw - TIN, ZEAVE + 0.12)]
+    adds.append(('white', fr.side_prism(prof, ua, ub)))
+    nd = int((ub - ua) / 0.3)
+    for i in range(nd):
+        u = ua + 0.09 + i * 0.3
+        adds.append(('brick', fr.side_prism([(sw - 0.05, ZEAVE - 0.52), (sw, ZEAVE - 0.52), (sw + 0.1, ZEAVE - 0.42), (sw + 0.1, ZEAVE - 0.34), (sw - 0.05, ZEAVE - 0.34)], u, u + 0.13)))
+
 # ------------------------------------------------------------------ roof terrace railing on the parapet
 line = flat_poly.buffer(-PARA / 2)
 if line.geom_type != 'Polygon': line = max(line.geoms, key=lambda p: p.area)
@@ -301,5 +330,5 @@ for col, s_ in GABLE: m.add(col, s_)
 for col, s in adds:
     if col == 'slate': s = s - cut
     m.add(col, s)
-parts, summary = orn.finish(m, S, os.path.join(ROOT, 'out', NAME), ring_key='slate')
+parts, summary = orn.finish(m, S, os.path.join(ROOT, 'out', NAME), ring_key='slate', ring_min_z=ZFLAT + RH + 0.15)
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:300])

@@ -36,7 +36,7 @@ cam.type='ORTHO'; cam.ortho_scale=r*2.1
 import os
 if os.environ.get('RZ_C'):
     c=mathutils.Vector([float(t) for t in os.environ['RZ_C'].split(',')]); cam.ortho_scale=float(os.environ.get('RZ_S','20'))
-views=dict(front=(0,-1,0.15),back=(0,1,0.15),left=(-1,0,0.15),right=(1,0,0.15),q1=(-1,-1,0.7),q2=(1,1,0.7),top=(0.001,-0.001,1),under=(0.3,-0.4,-1),e2=(-0.37,0.93,0.12),e2q=(-0.8,0.6,0.3))
+views=dict(front=(0,-1,0.15),back=(0,1,0.15),left=(-1,0,0.15),right=(1,0,0.15),q1=(-1,-1,0.7),q2=(1,1,0.7),top=(0.001,-0.001,1),under=(0.3,-0.4,-1),e2=(-0.37,0.93,0.12),e2q=(-0.8,0.6,0.3),e3=(0.68,0.74,0.1),e4=(0.7,-0.72,0.1),e34=(0.99,0.05,-0.15))
 sel=argv[2].split(',') if len(argv)>2 else list(views)
 for name in sel:
     d=mathutils.Vector(views[name]).normalized()
