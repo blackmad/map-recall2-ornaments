@@ -1,4 +1,34 @@
 {
+ "ark-520-model": {
+  "size": [
+   230.0,
+   71.9,
+   38.4
+  ],
+  "scale": "1:104",
+  "colours": {
+   "white": "EEEBE3",
+   "grey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 1521
+ },
+ "ark-520": {
+  "size": [
+   100.0,
+   31.2,
+   17.1
+  ],
+  "scale": "1:240",
+  "colours": {
+   "white": "EEEBE3",
+   "grey": "8E8E88",
+   "charcoal": "2A2C30",
+   "brown": "4B2E24"
+  },
+  "overhang": 324
+ },
  "da-costakade-13-lit": {
   "size": [
    83.0,

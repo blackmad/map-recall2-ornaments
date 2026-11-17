@@ -1,0 +1,55 @@
+{
+ "dropped_slivers": {
+  "charcoal": 0,
+  "grey": 0,
+  "white": 0
+ },
+ "name": "ark-520-boat",
+ "size_mm": [
+  8.3,
+  22.7,
+  5.2
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "white": "EEEBE3",
+  "grey": "8E8E88",
+  "charcoal": "2A2C30"
+ },
+ "parts": {
+  "charcoal": {
+   "watertight": true,
+   "volume_mm3": 154.4,
+   "bodies": 1,
+   "overhang_mm2": 105.2
+  },
+  "grey": {
+   "watertight": true,
+   "volume_mm3": 11.7,
+   "bodies": 1,
+   "overhang_mm2": 2.5
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 446.5,
+   "bodies": 1,
+   "overhang_mm2": 49.8
+  },
+  "_exterior": {
+   "overhang_mm2": 52.19,
+   "overhang_by_z": {
+    "0": 10.11,
+    "1": 25.12,
+    "2": 6.21,
+    "3": 10.75
+   },
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {
+  "charcoal&grey": 0.0,
+  "charcoal&white": 0.0,
+  "grey&white": 0.0
+ },
+ "base_cap": null
+}
