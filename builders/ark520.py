@@ -115,7 +115,9 @@ chair = [box(cx0, cx0 + 0.75, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.42),         
 cut = orn.union(cuts)
 walls = walls - cut; hull = hull - cut
 P.append(('charcoal', lining - cut))
-P.append(('white', orn.union(chair)))
+# turned 45 degrees (user 2026-11-17): back to the glass corner, centred on the corner diagonal inside the room
+CHC = np.array([cx0 + 0.375, cy0 + 0.375]); CHT = np.array([WX1 - RIN - 0.6, WY0 + RIN + 0.6])
+P.append(('white', orn.union(chair).translate([-CHC[0], -CHC[1], 0]).rotate([0, 0, 45]).translate([CHT[0], CHT[1], 0])))
 
 # ---------------------------------------------------------------- roof furniture
 def tilted_bank(x0, x1, y0, y1, nx, ny, rise=0.3):
