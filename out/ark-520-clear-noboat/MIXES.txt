@@ -1,0 +1,11 @@
+ark-520-clear-noboat: Snapmaker Orca filament slots
+
+  1  white        #EEEBE3
+  2  black        #1C1C1E
+  3  clear        #D6E4E6
+  4  brick        #8C4A3A
+  5  greymix      #8E8E88   MIXED: filament 1 (white) + filament 2 (black), 50% black
+  6  charcoalmix  #4A4B4E   MIXED: filament 1 (white) + filament 2 (black), 75% black
+
+Load white, black, clear, brick into slots 1-4 in that order, then add the two mixes (Mixed Filaments >
+Add Mix) in this order: grey first (becomes filament 5), charcoal second (filament 6).

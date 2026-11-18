@@ -196,8 +196,10 @@ def top_height_near(tm, x, y, rad, mode='max'):
 
 def hex2rgb(h): return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
-def write_3mf(path, name, parts, palette):
-    """parts: dict key -> trimesh (mm). One object made of one part per colour; extruder = palette order."""
+def write_3mf(path, name, parts, palette, fixed_slots=False):
+    """parts: dict key -> trimesh (mm). One object made of one part per colour; extruder = palette order.
+    fixed_slots: extruder = the key's position in the full palette even when earlier keys have no geometry (needed when
+    slots 5+ are Snapmaker Orca mixed filaments, whose ids sit after the physical spools)."""
     keys = [k for k, _ in palette if k in parts and len(parts[k].faces)]
     hexes = dict(palette)
     objs = []; comp_ids = []
@@ -227,8 +229,9 @@ def write_3mf(path, name, parts, palette):
 </resources>
 <build><item objectid="{parent}" transform="1 0 0 0 1 0 0 0 1 {tx:.4f} {ty:.4f} {tz:.4f}" printable="1"/></build>
 </model>'''
+    slot = {k: ([p for p, _ in palette].index(k) if fixed_slots else keys.index(k)) + 1 for k in keys}
     parts_cfg = ''.join(
-        f'<part id="{i}" subtype="normal_part"><metadata key="name" value="{k} ({hexes[k]})"/><metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/><metadata key="extruder" value="{keys.index(k) + 1}"/></part>'
+        f'<part id="{i}" subtype="normal_part"><metadata key="name" value="{k} ({hexes[k]})"/><metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/><metadata key="extruder" value="{slot[k]}"/></part>'
         for i, k in comp_ids)
     cfg = f'''<?xml version="1.0" encoding="UTF-8"?>
 <config>
@@ -338,7 +341,8 @@ def finish(model: Model, scale_mm_per_m: float, out_dir: str, ring=True, ring_ke
     hexes = dict(model.palette)
     for k, p in parts.items():
         p.export(os.path.join(out_dir, f'{model.name}__{k}__{hexes[k]}.stl'))
-    keys = write_3mf(os.path.join(out_dir, f'{model.name}-4colour.3mf'), model.name, parts, model.palette)
+    keys = write_3mf(os.path.join(out_dir, f'{model.name}-4colour.3mf'), model.name, parts, model.palette,
+                     fixed_slots=getattr(model, 'fixed_slots', False))
     rep, ov = printability_report(parts, union_m=union(list(man_mm.values())))
     if os.environ.get('ORN_THIN') == '1':
         try: rep['_thin'] = thin_report(parts)

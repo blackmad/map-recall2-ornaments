@@ -29,6 +29,40 @@
   },
   "overhang": 312
  },
+ "ark-520-clear-noboat": {
+  "size": [
+   90.2,
+   31.3,
+   19.0
+  ],
+  "scale": "1:240",
+  "colours": {
+   "white": "EEEBE3",
+   "black": "1C1C1E",
+   "clear": "D6E4E6",
+   "brick": "8C4A3A",
+   "greymix": "8E8E88",
+   "charcoalmix": "4A4B4E"
+  },
+  "overhang": 301
+ },
+ "ark-520-clear": {
+  "size": [
+   100.0,
+   31.2,
+   19.0
+  ],
+  "scale": "1:240",
+  "colours": {
+   "white": "EEEBE3",
+   "black": "1C1C1E",
+   "clear": "D6E4E6",
+   "brick": "8C4A3A",
+   "greymix": "8E8E88",
+   "charcoalmix": "4A4B4E"
+  },
+  "overhang": 301
+ },
  "ark-520-mix-noboat": {
   "size": [
    90.2,
@@ -90,6 +124,40 @@
    "blue": "3D6F9C"
   },
   "overhang": 1521
+ },
+ "ark-520-model-clear-noboat": {
+  "size": [
+   207.6,
+   72.0,
+   38.4
+  ],
+  "scale": "1:104",
+  "colours": {
+   "white": "EEEBE3",
+   "black": "1C1C1E",
+   "clear": "D6E4E6",
+   "brick": "8C4A3A",
+   "greymix": "8E8E88",
+   "charcoalmix": "4A4B4E"
+  },
+  "overhang": 1494
+ },
+ "ark-520-model-clear": {
+  "size": [
+   230.0,
+   71.9,
+   38.4
+  ],
+  "scale": "1:104",
+  "colours": {
+   "white": "EEEBE3",
+   "black": "1C1C1E",
+   "clear": "D6E4E6",
+   "brick": "8C4A3A",
+   "greymix": "8E8E88",
+   "charcoalmix": "4A4B4E"
+  },
+  "overhang": 1494
  },
  "ark-520-model-mix-noboat": {
   "size": [

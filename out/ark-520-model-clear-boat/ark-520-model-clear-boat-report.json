@@ -1,0 +1,60 @@
+{
+ "dropped_slivers": {
+  "black": 0,
+  "white": 0,
+  "greymix": 0
+ },
+ "name": "ark-520-model-clear-boat",
+ "size_mm": [
+  19.2,
+  47.4,
+  11.6
+ ],
+ "scale": "1:104",
+ "extruders": {
+  "white": "EEEBE3",
+  "black": "1C1C1E",
+  "greymix": "8E8E88"
+ },
+ "parts": {
+  "black": {
+   "watertight": true,
+   "volume_mm3": 103.5,
+   "bodies": 2,
+   "overhang_mm2": 124.6
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 41.9,
+   "bodies": 1,
+   "overhang_mm2": 64.3
+  },
+  "greymix": {
+   "watertight": true,
+   "volume_mm3": 4107.5,
+   "bodies": 1,
+   "overhang_mm2": 261.4
+  },
+  "_exterior": {
+   "overhang_mm2": 324.31,
+   "overhang_by_z": {
+    "1": 113.98,
+    "2": 61.85,
+    "3": 15.53,
+    "4": 3.51,
+    "5": 2.58,
+    "6": 57.46,
+    "7": 63.92,
+    "9": 3.52,
+    "10": 1.96
+   },
+   "bodies": 1
+  }
+ },
+ "overlaps_mm3": {
+  "black&white": 0.0,
+  "black&greymix": 0.0,
+  "white&greymix": 0.0
+ },
+ "base_cap": null
+}

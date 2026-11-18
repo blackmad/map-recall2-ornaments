@@ -18,18 +18,28 @@ import orn
 from orn import box
 
 SIZE = os.environ.get('ORN_SIZE', 'ornament')
+CLEAR = os.environ.get('ORN_CLEAR', '0') == '1'    # transparent water + glass, brick wood, black, white, and two white/black
+                                                   # mixes: grey roof, charcoal hull + deck (user's spools 2026-11-18)
 SWAP = os.environ.get('ORN_SWAP', '0') == '1'      # 4 slots, one spool swap: slot 2 prints the blue water plate, then a pause
                                                    # at the plate top swaps that spool to grey for the hull, deck and vents
 MIX = os.environ.get('ORN_MIX', '0') == '1'        # 5 slots: blue water AND brown frames; grey is mixed from white+black by the user
 BLUE = MIX or os.environ.get('ORN_BLUE', '0') == '1'  # blue water (and solar panels); without MIX frames/pots/chairs go charcoal
 BOAT = os.environ.get('ORN_NOBOAT', '0') != '1'    # house only: no sloop, no pins, water trimmed to the ark
-NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-swap' if SWAP else '-mix' if MIX else '-blue' if BLUE else '') + ('' if BOAT else '-noboat')
-PALETTE = ([('white', 'EEEBE3'), ('bluegrey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')] if SWAP else
+NAME = 'ark-520' + ('' if SIZE == 'ornament' else '-model') + ('-clear' if CLEAR else '-swap' if SWAP else '-mix' if MIX else '-blue' if BLUE else '') + ('' if BOAT else '-noboat')
+# CLEAR: slots 1-4 are the physical spools; 5 and 6 are Snapmaker Orca mixed filaments (white 1 + black 2), which Orca
+# numbers after the physical ones in the order they are added: 5 = grey (50% black), 6 = charcoal (75% black)
+MIXES = {'greymix': 50, 'charcoalmix': 75}
+PALETTE = ([('white', 'EEEBE3'), ('black', '1C1C1E'), ('clear', 'D6E4E6'), ('brick', '8C4A3A'), ('greymix', '8E8E88'), ('charcoalmix', '4A4B4E')] if CLEAR else
+           [('white', 'EEEBE3'), ('bluegrey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')] if SWAP else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24'), ('blue', '3D6F9C')] if MIX else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('blue', '3D6F9C')] if BLUE else
            [('white', 'EEEBE3'), ('grey', '8E8E88'), ('charcoal', '2A2C30'), ('brown', '4B2E24')])
 def C(c):
     """Logical colour -> palette key for this variant."""
+    if CLEAR:
+        return {'water': 'clear', 'glass': 'clear', 'dome': 'clear', 'backing': 'black', 'roof': 'greymix', 'grey': 'greymix',
+                'hull': 'charcoalmix', 'lining': 'black', 'solar': 'black', 'brown': 'brick'}.get(c, c)
+    c = {'glass': 'grey', 'dome': 'white', 'roof': 'charcoal', 'hull': 'grey', 'lining': 'charcoal'}.get(c, c)
     if SWAP:   # water below the plate top and grey above it share slot 2; the solar panels go charcoal
         return {'grey': 'bluegrey', 'water': 'bluegrey', 'solar': 'charcoal'}.get(c, c)
     if c == 'brown' and BLUE and not MIX: return 'charcoal'
@@ -41,6 +51,7 @@ S = LEN_MM / (PX1 - PX0); MM = 1.0 / S
 print(f'{NAME}: scale 1:{1000 / S:.0f}, 1 mm = {MM:.3f} m')
 FW = max(0.09, 0.5 * MM)          # frame / mullion bar
 RECESS, TIN = 0.35 * MM, 0.8 * MM
+BACK = 0.8 * MM                   # clear variant: black backing behind each pane
 PLATE = (1.2 if SIZE == 'ornament' else 2.0) * MM
 
 # ---------------------------------------------------------------- dimensions (m)
@@ -49,7 +60,9 @@ ZH, ZW, ZR = 0.65, 2.95, 3.3                        # hull top, wall top / fasci
 OVH = 0.15                                          # roof overhang
 TX0, TX1, TY1, ZT = 8.9, 12.4, 3.4, 2.0             # sunken terrace (canal side) and its floor
 m = orn.Model(NAME, PALETTE)
-m.set_priority([k for k, _ in PALETTE])   # later wins (white < grey < charcoal < brown/blue)
+m.set_priority(['white', 'clear', 'greymix', 'charcoalmix', 'black', 'brick'] if CLEAR else
+               [k for k, _ in PALETTE])   # later wins (white < grey < charcoal < brown/blue)
+m.fixed_slots = CLEAR
 P = []                                              # (colour, solid)
 
 def fbox(face, u0, u1, z0, z1, d0, d1):
@@ -66,8 +79,8 @@ roof = box(WX0 - OVH, WX1 + OVH, WY0 - OVH, WY1 + OVH, ZW, ZR)
 # sunken terrace: everything above ZT goes, lowered roof skin + fascia on the canal side
 cut_t = box(TX0, TX1, -5, TY1, ZT, 10)
 walls = walls - cut_t; roof = roof - cut_t
-P.append(('charcoal', box(TX0, TX1, WY0 - OVH, TY1, ZT - 0.9 * MM, ZT)))
-P.append(('charcoal', box(TX0, TX1, WY0 - 0.12, WY0 + 0.25, ZT - 0.25, ZT + 0.05)))
+P.append(('roof', box(TX0, TX1, WY0 - OVH, TY1, ZT - 0.9 * MM, ZT)))
+P.append(('roof', box(TX0, TX1, WY0 - 0.12, WY0 + 0.25, ZT - 0.25, ZT + 0.05)))
 # plank grooves in the white walls (vertical boards)
 GS = max(0.16, 1.2 * MM); GW = max(0.03, 0.3 * MM); GD = max(0.02, 0.2 * MM)
 grooves = []
@@ -84,7 +97,11 @@ def window(face, u0, u1, z0, z1, panes=1, open_=False, door=False):
     if door:
         P.append(('brown', fbox(face, u0, u1, z0, z1, RECESS, RECESS + TIN))); return
     if not open_:
-        P.append(('grey', fbox(face, u0, u1, z0, z1, RECESS, RECESS + TIN)))     # glass with drawn curtains
+        P.append(('glass', fbox(face, u0, u1, z0, z1, RECESS, RECESS + TIN)))    # glass with drawn curtains
+        if CLEAR:   # dark room behind the clear pane, so it reads as glass and not as frosted white wall
+            P.append(('backing', fbox(face, u0, u1, z0, z1, RECESS + TIN, RECESS + TIN + BACK)))
+    elif CLEAR:     # the open NE glazing gets a real clear pane; the lined room and chair show through it
+        P.append(('glass', fbox(face, u0, u1, z0, z1, RECESS, RECESS + TIN)))
     ring = [fbox(face, u0, u0 + FW, z0, z1, 0.0, RECESS + TIN), fbox(face, u1 - FW, u1, z0, z1, 0.0, RECESS + TIN),
             fbox(face, u0, u1, z0, z0 + FW, 0.0, RECESS + TIN), fbox(face, u0, u1, z1 - FW, z1, 0.0, RECESS + TIN)]
     for i in range(1, panes):
@@ -119,7 +136,7 @@ chair = [box(cx0, cx0 + 0.75, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.42),         
          box(cx0 + 0.61, cx0 + 0.75, cy0, cy0 + 0.75, RZ0 - 0.01, RZ0 + 0.62)]
 cut = orn.union(cuts)
 walls = walls - cut; hull = hull - cut
-P.append(('charcoal', lining - cut))
+P.append(('lining', lining - cut))
 # turned 45 degrees (user 2026-11-17): back to the glass corner, centred on the corner diagonal inside the room
 CHC = np.array([cx0 + 0.375, cy0 + 0.375]); CHT = np.array([WX1 - RIN - 0.6, WY0 + RIN + 0.6])
 P.append(('white', orn.union(chair).translate([-CHC[0], -CHC[1], 0]).rotate([0, 0, 45]).translate([CHT[0], CHT[1], 0])))
@@ -143,7 +160,7 @@ tilted_bank(0.75, 5.33, 3.4, 4.4, 3, 1, rise=0.18)
 # dome skylight: white upstand + dome
 P.append(('white', box(15.5, 16.9, 2.7, 4.1, ZR - 0.02, ZR + 0.15)))
 dome = trimesh.creation.icosphere(subdivisions=3, radius=1.0); dome.apply_scale([0.62, 0.62, 0.32]); dome.apply_translation([16.2, 3.4, ZR + 0.15])
-P.append(('white', orn.to_manifold(dome) ^ box(15, 18, 2, 5, ZR + 0.14, 10)))
+P.append(('dome', orn.to_manifold(dome) ^ box(15, 18, 2, 5, ZR + 0.14, 10)))
 # planters along the quay edge, vents
 def pot(x, y, d=0.55, h=0.32):
     c = trimesh.creation.cylinder(radius=d / 2, height=h, sections=24); c.apply_translation([x, y, ZR + h / 2 - 0.02])
@@ -165,14 +182,14 @@ deck = box(13.3, 18.6, -1.45, WY0 - 0.06, 0.0, DZ)
 plank = max(0.2, 1.2 * MM)
 for yy in np.arange(-1.45 + plank, WY0 - 0.1, plank):
     deck = deck - box(13.2, 18.7, yy, yy + max(0.03, 0.3 * MM), DZ - max(0.02, 0.2 * MM), DZ + 1)
-P.append(('grey', deck))
+P.append(('hull', deck))
 # Adirondack chair on the deck (brown): slanted seat + back, on a solid base so it prints
 ax, ay = 14.4, -1.15
 P.append(('brown', orn.yz_prism([(ay, DZ - 0.01), (ay + 0.75, DZ - 0.01), (ay + 0.75, DZ + 0.95), (ay + 0.6, DZ + 0.95), (ay + 0.5, DZ + 0.38), (ay, DZ + 0.42)], ax, ax + 0.7)))
 P.append(('grey', orn.to_manifold(trimesh.creation.cylinder(radius=0.32, height=0.06, sections=24).apply_translation([16.0, -0.7, DZ + 0.72])) +
           box(15.97, 16.03, -0.73, -0.67, DZ - 0.01, DZ + 0.72) + box(15.75, 16.25, -0.95, -0.45, DZ - 0.01, DZ + 0.04)))
 pont = box(WX1 + 0.12, 20.6, -0.95, 2.6, 0.0, 0.4)
-P.append(('grey', pont))
+P.append(('hull', pont))
 for x, y in ((20.1, -0.45), (20.15, 0.35)):
     c = trimesh.creation.cylinder(radius=0.24, height=0.42, sections=20); c.apply_translation([x, y, 0.4 + 0.2])
     P.append(('brown', orn.to_manifold(c)))
@@ -189,7 +206,7 @@ for x, y in PINS:
     c = trimesh.creation.cylinder(radius=PIN_D / 2 * MM, height=PIN_H * MM + 0.02, sections=24)
     c.apply_translation([x, y, (PIN_H * MM) / 2 - 0.01]); pins.append(orn.to_manifold(c))
 P.append(('water', water + orn.union(pins) if pins else water))
-P.append(('grey', hull)); P.append(('white', walls)); P.append(('charcoal', roof))
+P.append(('hull', hull)); P.append(('white', walls)); P.append(('roof', roof))
 for col, s_ in P: m.add(C(col), s_)
 
 if BOAT:
@@ -199,7 +216,11 @@ if BOAT:
     # side with a steering wheel. Its own palette, the same for every ark variant.
     BPAL = [('lightgrey', 'C9CBC8'), ('white', 'EEEBE3'), ('charcoal', '2A2C30')]   # cushions light grey, not sea blue (user)
     b = orn.Model(NAME + '-boat', BPAL)
-    b.set_priority(['lightgrey', 'white', 'charcoal'])
+    if CLEAR:   # same slots as the ark: hull + cushions in the grey mix (slot 5), table white (1), rub strake + hatch black (2)
+        b = orn.Model(NAME + '-boat', PALETTE); b.fixed_slots = True
+        _add = b.add; _BMAP = {'lightgrey': 'greymix', 'charcoal': 'black'}
+        b.add = lambda k, s_: _add(_BMAP.get(k, k), s_)
+    b.set_priority(['greymix', 'white', 'black'] if CLEAR else ['lightgrey', 'white', 'charcoal'])
     FB = 0.75                                          # gunwale height
     def bplan(t):
         """Hull plan at height fraction t (0 bottom .. 1 gunwale): bilge-rounded at the bottom, stem raked forward."""
@@ -287,7 +308,7 @@ if BOAT:
             k = trimesh.creation.cylinder(radius=0.45, height=RIM_H + 0.3, sections=20)   # grip knob on the rim at each spoke
             k.apply_translation([(RIM_OD / 2 - RIM_W / 2) * math.cos(a), (RIM_OD / 2 - RIM_W / 2) * math.sin(a), (RIM_H + 0.3) / 2]); wm.append(k)
         wheel = orn.union([orn.to_manifold(t) for t in wm])
-        w = orn.Model(NAME + '-wheel', [('brown', '4B2E24')])
+        w = orn.Model(NAME + '-wheel', [('brown', '8C4A3A' if CLEAR else '4B2E24')])
         w.add('brown', wheel.scale([MM] * 3))           # finish scales m -> mm
         orn.finish(w, S, os.path.join(ROOT, 'out', NAME + '-wheel'), ring=False)
         # pose for the demo: wheel +z (axle) along AX, hub back face 0.1 mm off the console face, in boat print mm
@@ -318,7 +339,7 @@ if SIZE == 'ornament':
     a = max(com[0] - (TX0 - Re - re_ - 0.25), (TX1 + Re + re_ + 0.25) - com[0])
     for ex in (com[0] - a, com[0] + a):
         t = orn.torus(Re, re_).rotate([90, 0, 90]).translate([ex, com[1], ZR + Re * math.cos(math.radians(45))])
-        m.add('charcoal', t)
+        m.add(C('roof'), t)
     print('eyelets at x', round(com[0] - a, 2), round(com[0] + a, 2), 'y', round(com[1], 2))
 parts, summary = orn.finish(m, S, out, ring=False)
 if SWAP:   # the spool swap height (mm above the bed): only the water plate lies below it
@@ -331,3 +352,11 @@ if SWAP:   # the spool swap height (mm above the bed): only the water plate lies
     print('swap at', round(zs, 2), 'mm')
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:200])
 
+if CLEAR:   # what to set up in Snapmaker Orca: the 3mf already puts the grey parts on filaments 5 and 6
+    lines = [f'{NAME}: Snapmaker Orca filament slots', '']
+    for i, (k, h) in enumerate(PALETTE, 1):
+        lines.append(f'  {i}  {k:12s} #{h}' + (f'   MIXED: filament 1 (white) + filament 2 (black), {MIXES[k]}% black' if k in MIXES else ''))
+    lines += ['', 'Load white, black, clear, brick into slots 1-4 in that order, then add the two mixes (Mixed Filaments >',
+              'Add Mix) in this order: grey first (becomes filament 5), charcoal second (filament 6).']
+    for d in [out] + ([os.path.join(ROOT, 'out', NAME + '-boat')] if BOAT else []):
+        open(os.path.join(d, 'MIXES.txt'), 'w').write('\n'.join(lines) + '\n')

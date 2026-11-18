@@ -1,0 +1,100 @@
+{
+ "dropped_slivers": {
+  "brick": 0,
+  "black": 0,
+  "charcoalmix": 0,
+  "greymix": 0,
+  "clear": 0,
+  "white": 0
+ },
+ "name": "ark-520-clear-noboat",
+ "size_mm": [
+  90.2,
+  31.3,
+  19.0
+ ],
+ "scale": "1:240",
+ "extruders": {
+  "white": "EEEBE3",
+  "black": "1C1C1E",
+  "clear": "D6E4E6",
+  "brick": "8C4A3A",
+  "greymix": "8E8E88",
+  "charcoalmix": "4A4B4E"
+ },
+ "parts": {
+  "brick": {
+   "watertight": true,
+   "volume_mm3": 305.2,
+   "bodies": 21,
+   "overhang_mm2": 219.8
+  },
+  "black": {
+   "watertight": true,
+   "volume_mm3": 776.6,
+   "bodies": 12,
+   "overhang_mm2": 542.7
+  },
+  "charcoalmix": {
+   "watertight": true,
+   "volume_mm3": 4829.2,
+   "bodies": 2,
+   "overhang_mm2": 1860.1
+  },
+  "greymix": {
+   "watertight": true,
+   "volume_mm3": 2421.6,
+   "bodies": 3,
+   "overhang_mm2": 1744.2
+  },
+  "clear": {
+   "watertight": true,
+   "volume_mm3": 3683.0,
+   "bodies": 21,
+   "overhang_mm2": 74.0
+  },
+  "white": {
+   "watertight": true,
+   "volume_mm3": 12277.6,
+   "bodies": 5,
+   "overhang_mm2": 1761.7
+  },
+  "_exterior": {
+   "overhang_mm2": 301.46,
+   "overhang_by_z": {
+    "2": 3.73,
+    "4": 3.94,
+    "5": 6.54,
+    "6": 2.28,
+    "7": 9.83,
+    "8": 0.27,
+    "10": 8.72,
+    "11": 34.22,
+    "12": 220.17,
+    "13": 0.44,
+    "14": 5.86,
+    "15": 2.07,
+    "16": 3.39
+   },
+   "bodies": 3
+  }
+ },
+ "overlaps_mm3": {
+  "brick&black": -0.0,
+  "brick&charcoalmix": 0.0,
+  "brick&greymix": 0.0,
+  "brick&clear": -0.0,
+  "brick&white": -0.0,
+  "black&charcoalmix": 0.0,
+  "black&greymix": 0.0,
+  "black&clear": 0.0,
+  "black&white": 0.0,
+  "charcoalmix&greymix": 0.0,
+  "charcoalmix&clear": 0.0,
+  "charcoalmix&white": 0.0,
+  "greymix&clear": 0.0,
+  "greymix&white": 0.0,
+  "clear&white": -0.005
+ },
+ "base_cap": null
+}
