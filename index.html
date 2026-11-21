@@ -1,0 +1,203 @@
+<meta charset="utf-8">
+<title>Amsterdam House Ornaments</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+/* Layout: a workbench — one large turntable stage, a spec column beside it, building tabs above. */
+:root {
+  --bg: #F3EEE9; --panel: #FBF8F5; --ink: #2A2120; --muted: #75655F; --line: #DDD2CA;
+  --brick: #8C4A3A; --stage: #E6DDD5; --accent: #8C4A3A;
+  --display: "Fraunces", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1C1716; --panel: #241E1C; --ink: #F1E9E3; --muted: #B3A39B; --line: #3D3330; --stage: #2E2624; --accent: #D98B74; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #1C1716; --panel: #241E1C; --ink: #F1E9E3; --muted: #B3A39B; --line: #3D3330; --stage: #2E2624; --accent: #D98B74; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 68ch; margin: 6px 0 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab { font: 500 14px var(--body); background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab:focus-visible, .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bench { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.stage { background: var(--stage); border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 4 / 5; max-height: 78vh; width: 100%; max-width: 100%; }
+
+.hint { position: absolute; left: 12px; bottom: 10px; font: 12px var(--mono); color: var(--muted); }
+.spec { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.spec h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 0; line-height: 1.2; }
+.addr { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.label { font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: 500 13px var(--body); background: transparent; color: var(--ink); border: 0; padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:disabled { opacity: .35; cursor: default; }
+.opts { display: grid; gap: 12px; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 14px; }
+dt { color: var(--muted); } dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.swatches { display: grid; gap: 6px; }
+.sw { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.chip { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--line); }
+.sw code { font: 12px var(--mono); color: var(--muted); }
+.note { font-size: 13.5px; color: var(--muted); margin: 0; }
+.path { font: 12px var(--mono); background: var(--stage); border-radius: 6px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px; cursor: pointer; text-align: left; color: var(--ink); font: 13px var(--body); display: grid; gap: 4px; }
+.card img { background: #C9C9C9; border-radius: 6px; aspect-ratio: 1; object-fit: cover; width: 100%; }
+.card[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.section-h { font-family: var(--display); font-size: 20px; font-weight: 500; margin: 8px 0 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Amsterdam house ornaments</h1>
+    <p class="lede">Four-colour Christmas ornaments of Amsterdam buildings and a houseboat, each with a hanging ring sunk into the roof (the houseboat hangs from two eyelets). The houseboat also comes as a 23&nbsp;cm model without a ring. Each variant is one printable body; the 3MF opens in Snapmaker Orca with filaments 1–4 already assigned. Drag to turn the model.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+
+  <section class="bench">
+    <div class="stage">
+      <img id="poster" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.9">
+      <div id="mv" style="position:absolute;inset:0;touch-action:none;cursor:grab"></div>
+      <div id="loading" class="hint" style="top:10px;bottom:auto">loading model…</div>
+      <span class="hint">drag to orbit · scroll or pinch to zoom</span>
+    </div>
+    <aside class="spec">
+      <div><h2 id="name"></h2><div class="addr" id="addr"></div></div>
+      <div class="opts">
+        <div><div class="label" id="mode-label">Windows</div>
+          <div class="seg" id="seg-lit"><button id="b-solid" data-lit="0">Coloured glass</button><button id="b-lit" data-lit="1">Lit from inside</button></div></div>
+        <div id="water-row" hidden><div class="label">Water</div>
+          <div class="seg"><button data-blue="0">Charcoal</button><button data-blue="1">Blue</button><button data-blue="2">Blue + brown</button><button data-blue="3">Blue + brown, spool swap</button><button data-blue="4">Clear + brick</button></div></div>
+        <div id="boat-row" hidden><div class="label">Little boat</div>
+          <div class="seg"><button data-boat="1">With sloop</button><button data-boat="0">House only</button></div></div>
+        <div id="letters-row"><div class="label">Lettering</div>
+          <div class="seg"><button id="b-let" data-let="1">HET PAKHUIS</button><button id="b-nolet" data-let="0">Plain</button></div></div>
+      </div>
+      <div><div class="label">Print</div>
+        <dl><dt>Size</dt><dd id="size"></dd><dt>Scale</dt><dd id="scale"></dd><dt>Overhang</dt><dd id="over"></dd></dl></div>
+      <div><div class="label">Filaments</div><div class="swatches" id="sw"></div></div>
+      <p class="note" id="about"></p>
+      <div><div class="label">3MF on your Mac</div><div class="path" id="path"></div></div>
+    </aside>
+  </section>
+
+  <h3 class="section-h">All variants</h3>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const META = {"ark-520-blue-noboat": {"size": [90.2, 31.3, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "blue": "3D6F9C"}, "overhang": 312}, "ark-520-blue": {"size": [100.0, 31.2, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "blue": "3D6F9C"}, "overhang": 312}, "ark-520-clear-noboat": {"size": [90.2, 31.3, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "black": "1C1C1E", "clear": "D6E4E6", "brick": "8C4A3A", "greymix": "8E8E88", "charcoalmix": "4A4B4E"}, "overhang": 301}, "ark-520-clear": {"size": [100.0, 31.2, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "black": "1C1C1E", "clear": "D6E4E6", "brick": "8C4A3A", "greymix": "8E8E88", "charcoalmix": "4A4B4E"}, "overhang": 301}, "ark-520-mix-noboat": {"size": [90.2, 31.3, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24", "blue": "3D6F9C"}, "overhang": 312}, "ark-520-mix": {"size": [100.0, 31.2, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24", "blue": "3D6F9C"}, "overhang": 312}, "ark-520-model-blue-noboat": {"size": [207.6, 72.0, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "blue": "3D6F9C"}, "overhang": 1521}, "ark-520-model-blue": {"size": [230.0, 71.9, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "blue": "3D6F9C"}, "overhang": 1521}, "ark-520-model-clear-noboat": {"size": [207.6, 72.0, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "black": "1C1C1E", "clear": "D6E4E6", "brick": "8C4A3A", "greymix": "8E8E88", "charcoalmix": "4A4B4E"}, "overhang": 1494}, "ark-520-model-clear": {"size": [230.0, 71.9, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "black": "1C1C1E", "clear": "D6E4E6", "brick": "8C4A3A", "greymix": "8E8E88", "charcoalmix": "4A4B4E"}, "overhang": 1494}, "ark-520-model-mix-noboat": {"size": [207.6, 72.0, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24", "blue": "3D6F9C"}, "overhang": 1521}, "ark-520-model-mix": {"size": [230.0, 71.9, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24", "blue": "3D6F9C"}, "overhang": 1521}, "ark-520-model-noboat": {"size": [207.6, 72.0, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 1521}, "ark-520-model-swap-noboat": {"size": [207.6, 72.0, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "bluegrey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 1519}, "ark-520-model-swap": {"size": [230.0, 71.9, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "bluegrey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 1519}, "ark-520-model": {"size": [230.0, 71.9, 38.4], "scale": "1:104", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 1521}, "ark-520-noboat": {"size": [90.2, 31.3, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 312}, "ark-520-swap-noboat": {"size": [90.2, 31.3, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "bluegrey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 310}, "ark-520-swap": {"size": [100.0, 31.2, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "bluegrey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 310}, "ark-520": {"size": [100.0, 31.2, 19.0], "scale": "1:240", "colours": {"white": "EEEBE3", "grey": "8E8E88", "charcoal": "2A2C30", "brown": "4B2E24"}, "overhang": 312}, "da-costakade-13-lit": {"size": [83.0, 63.9, 96.4], "scale": "1:198", "colours": {"brick": "7A4434", "white": "EEEAE0", "dark": "23292F", "slate": "4E5A53"}, "overhang": 1866}, "da-costakade-13": {"size": [83.0, 63.9, 96.4], "scale": "1:198", "colours": {"brick": "7A4434", "white": "EEEAE0", "dark": "23292F", "slate": "4E5A53"}, "overhang": 1309}, "eerste-helmersstraat-148-lit": {"size": [19.3, 52.5, 69.8], "scale": "1:258", "colours": {"brick": "8C4A3A", "white": "F1EEE7", "dark": "2B3440", "roof": "3C3F44"}, "overhang": 335}, "eerste-helmersstraat-148": {"size": [19.3, 52.5, 69.8], "scale": "1:258", "colours": {"brick": "8C4A3A", "white": "F1EEE7", "dark": "2B3440", "roof": "3C3F44"}, "overhang": 95}, "het-pakhuis-lit": {"size": [39.5, 32.0, 69.7], "scale": "1:509", "colours": {"brick": "42302A", "white": "F4F2EC", "charcoal": "2E2E30"}, "overhang": 586}, "het-pakhuis-noletters-lit": {"size": [39.5, 32.0, 69.7], "scale": "1:509", "colours": {"brick": "42302A", "white": "F4F2EC", "charcoal": "2E2E30"}, "overhang": 573}, "het-pakhuis-noletters": {"size": [39.5, 32.0, 69.7], "scale": "1:509", "colours": {"brick": "42302A", "cream": "E6DCC6", "glass": "5D7380", "charcoal": "2E2E30"}, "overhang": 272}, "het-pakhuis": {"size": [39.5, 32.0, 69.7], "scale": "1:509", "colours": {"brick": "42302A", "cream": "E6DCC6", "glass": "5D7380", "charcoal": "2E2E30"}, "overhang": 287}};
+const BUILDINGS = {
+  "het-pakhuis": { name: "Het Pakhuis", addr: "Haparandaweg 902–950", letters: true,
+    about: "Built from the game model and made uniform: every bay of the upper floors repeats the same window with a cream sill, and the gable windows keep only their outer frame. The HET PAKHUIS lettering is enlarged to a 2.4 mm cap height so it prints. The back is modelled from photos: a brick base with white doors, five storeys of loggias with railings in a dark frame, and glazed gables. The loggias have 45° ceilings so they print without supports." },
+  "eerste-helmersstraat-148": { name: "Eerste Helmersstraat 148", addr: "1899 · modelled from scratch", letters: false,
+    about: "Modelled from the street panorama: three bays, an arched top window, white keystones, two open balconettes with railings, a recessed front door, a slim white eaves board and a hoist dormer. At the back is the one-storey kitchen extension with a ridge skylight. Trimmed to 9 m deep. The back windows are invented because there's no photo." },
+  "da-costakade-13": { name: "Da Costakade 13", addr: "Da Costakade", letters: false,
+    about: "Rebuilt from your photos and floor plans at about 10 cm (1:198). The steep street gable has stone copings, a finial and a round-headed 4th-floor French window. Below it are French doors with segmental arches under green-grey glazed-brick arches, string courses and quoins, and open-railed balconettes on stepped brick corbels. The rear follows the plans: a wide glazed bedroom door with sidelights on a Juliet rail, a second bedroom window and a balcony door, with a garden door on the ground floor. Floors 1–2 have a balcony on the party-wall half. Floor 3’s balcony runs the whole rear and wraps round the corner. On the side, French doors open onto a stack of balconies on two rust posts, with white braces and a glass canopy on top. Cream gutters over brick dentils run along the eaves. The flat roof is an inset roof terrace behind a straight railed parapet, with the 4th-floor room behind the gable at full roof height. A sturdy three-quarter hanging ring is sunk into the terrace deck." },
+  "ark-520": { name: "Houseboat 520", addr: "Woonark, Jacob van Lennepkade 520", letters: false,
+    modes: ["Ornament · 10 cm", "Model · 23 cm"], modeLabel: "Size", suffix: "-model", boat: true,
+    about: "Laid out from the BAG mooring (20.4 × 5.5 m) and the 8 cm PDOK aerial photo, detailed from your photos. White vertical-plank walls stand on a grey concrete hull under a dark roof edge, with brown window frames. On the canal side: the SW corner window, a single and a double window, the low window under the sunken terrace (with its ladder), and the glazed sliding-door front at the NE end. The NE corner is open glazing: look through it and you see the white lounge chair just inside, turned 45° with its back to the glass corner. On the roof: two tilted solar banks, a dome skylight, planters and vents. A plank deck with an Adirondack chair and a table runs along the NE front, and a plant pontoon sits at the end. The little boat is an open electric canal sloop, modelled on the rental boat you sent. It has a raked bow and a foredeck with a hatch, light-grey wrap-round cushions, a white table and a console. It prints in its own three colours: light grey hull and cushions (a lighter white/black mix), white table, charcoal rub strake and hatch. It plugs onto two pins in the water plate (1.8 mm pins, 2.0 mm holes), so it lifts off. On the 23 cm model the steering wheel is a separate brown print, 8 mm across with six spokes. Print it flat with the axle up, then drop the axle into the hole in the console’s raked face: it spins freely (1.7 mm axle in a 2.1 mm hole) and gravity holds it in. On the ornament the wheel is a small moulded one; the house-only version drops the sloop and its pins and trims the water to the ark. The blue version prints the water and the solar panels blue and the frames, pots and chairs charcoal. The blue + brown version keeps all the colours and uses five filament slots: map slot 2 (concrete grey) to a white/black mix. The spool-swap version gets blue water, brown frames and a real grey hull from four toolheads. Slot 2 prints only the water plate in blue. Add a pause in Orca on the first layer where the grey hull appears (the top of the plate: 1.2 mm on the ornament, 2.0 mm on the model), swap that toolhead's spool from blue to grey, and resume. Nothing else is printed below that height, and the solar panels are charcoal in this version so blue isn't needed again. The clear + brick version is for white, black, clear and brick spools in Snapmaker Orca. The water and the window glass are clear, with black behind each pane so it reads as glass, and the open NE corner gets a real clear pane you see the chair through. The skylight dome is clear too. Frames, doors, planters, the deck chair and the bollards are brick. The roof is grey and the hull, deck and pontoon are charcoal, both mixed from white and black on the printer. The 3mf already puts the roof on filament 5 and the hull on filament 6. Load white, black, clear and brick into slots 1–4, then add two mixes of filament 1 + filament 2: grey (50% black) first, charcoal (75% black) second. The sloop's hull and cushions use the same grey mix. The ornament hangs from two small eyelets on the roof, one each side of the sunken terrace: run one loop of thread through both. They straddle the centre of mass measured on the print files, so it hangs level (the with-sloop ornament is balanced with the sloop on; it tips about 6° if you take the sloop off)." },
+};
+const LIT_NOTE = " The lit version is a hollow 1.6 mm shell, with 0.45 mm white panes in the windows. A separate snap-on bottom (shown below the model) closes it. Its plug clicks into a groove inside the wall, and a notch under one edge lets you pop it off with a fingernail or coin to put a small battery LED inside. Print the bottom plate-down. Its ceiling is pitched at 45° so it prints without supports.";
+const NAMES = { clear: "Transparent (water, window glass, skylight dome) · filament 3", black: "Black (solar panels, room lining, behind the glass) · filament 2", greymix: "Roof grey: mixed filament 5 = white + black, 50% black", charcoalmix: "Hull & deck charcoal: mixed filament 6 = white + black, 75% black", bluegrey: "Blue for the water plate, then swap the spool to grey", blue: "Canal blue", grey: "Concrete grey (white/black mix in the 5-slot version)", brown: "Frames brown", base: "Snap-on bottom (shown below)", brick: "Brick", white: "White", cream: "Cream stone", glass: "Glass", charcoal: "Charcoal roof", dark: "Dark glass & iron", slate: "Slate green-grey", roof: "Roof grey" };
+const OUT = "~/Code/map-recall2-ornaments/out/";
+
+let state = { b: "het-pakhuis", lit: 0, let: 1, blue: 0, boat: 1 };
+const $ = id => document.getElementById(id);
+const key = s => s.b + (BUILDINGS[s.b].letters && !s.let ? "-noletters" : "") + (s.lit ? (BUILDINGS[s.b].suffix || "-lit") : "")
+  + (BUILDINGS[s.b].boat && s.blue ? (s.blue === 4 ? "-clear" : s.blue === 3 ? "-swap" : s.blue === 2 ? "-mix" : "-blue") : "") + (BUILDINGS[s.b].boat && !s.boat ? "-noboat" : "");
+
+
+// ---- three.js viewer: geometry ships as base64 typed arrays, decoded here (no data: URI fetches)
+const V = (() => {
+  const host = $("mv");
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputEncoding = THREE.sRGBEncoding;
+  host.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(30, 1, 1, 2000);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f78, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(-60, 120, 160); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.25); fill.position.set(120, 40, -80); scene.add(fill);
+  const controls = new THREE.OrbitControls(cam, renderer.domElement);
+  controls.enableDamping = true; controls.minDistance = 40; controls.maxDistance = 600;
+  let group = null, want = null; const cache = {};
+  function b64(s, T) { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new T(u.buffer); }
+  function build(data) {
+    const g = new THREE.Group();
+    for (const p of data.parts) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(b64(p.p, Float32Array), 3));
+      geo.setIndex(new THREE.BufferAttribute(b64(p.i, Uint32Array), 1));
+      const ng = geo.toNonIndexed(); ng.computeVertexNormals();
+      const c = new THREE.Color("#" + p.hex); c.convertSRGBToLinear();
+      const clear = p.k === "clear";   // transparent filament: show it see-through
+      g.add(new THREE.Mesh(ng, new THREE.MeshStandardMaterial({ color: c, roughness: clear ? 0.25 : 0.8, metalness: 0, transparent: clear, opacity: clear ? 0.4 : 1, depthWrite: !clear })));
+    }
+    g.rotation.x = -Math.PI / 2;           // model is z-up, front facing -y
+    const box = new THREE.Box3().setFromObject(g), ctr = box.getCenter(new THREE.Vector3());
+    g.position.sub(ctr); return { g, size: box.getSize(new THREE.Vector3()) };
+  }
+  async function load(k) {
+    want = k; $("loading").hidden = false;
+    try {
+      if (!cache[k]) cache[k] = build(await (await fetch("models/" + k + ".json")).json());
+      if (want !== k) return;
+      if (group) scene.remove(group.g);
+      group = cache[k]; scene.add(group.g);
+      const r = Math.max(group.size.x, group.size.y, group.size.z);
+      if (!load.framed) { cam.position.set(r * 1.5, r * 0.5, r * 3.0); controls.target.set(0, 0, 0); load.framed = true; }
+      $("poster").hidden = true; $("loading").hidden = true;
+    } catch (e) { $("loading").textContent = "Couldn't load the model (" + e.message + ")"; }
+  }
+  function resize() { const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h, false); renderer.domElement.style.width = "100%"; renderer.domElement.style.height = "100%"; cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(host); resize();
+  (function tick() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(tick); })();
+  return { load };
+})();
+function show(k) { $("poster").src = "thumbs/" + k + "_q1.jpg"; V.load(k); }
+function render() {
+  const k = key(state), m = META[k], B = BUILDINGS[state.b];
+  show(k);
+  $("name").textContent = B.name; $("addr").textContent = B.addr;
+  $("size").textContent = m.size.map(v => v.toFixed(1)).join(" × ") + " mm";
+  $("scale").textContent = m.scale;
+  $("over").textContent = "≈" + m.overhang + " mm² (no supports)";
+  $("sw").innerHTML = Object.entries(m.colours).map(([n, h], i) =>
+    `<div class="sw"><span class="chip" style="background:#${h}"></span><span>${i + 1} · ${NAMES[n] || n}</span><code>#${h}</code></div>`).join("");
+  $("about").textContent = B.about + (state.lit && !B.suffix ? LIT_NOTE : "");
+  const modes = B.modes || ["Coloured glass", "Lit from inside"]; $("b-solid").textContent = modes[0]; $("b-lit").textContent = modes[1];
+  $("mode-label").textContent = B.modeLabel || "Windows";
+  $("path").textContent = OUT + k + "/" + k + "-4colour.3mf" + (B.boat && state.boat ? "  +  " + OUT + k + "-boat/" + k + "-boat-4colour.3mf" + (state.lit ? "  +  " + OUT + k + "-wheel/" + k + "-wheel-4colour.3mf" : "") : "");
+  $("water-row").hidden = $("boat-row").hidden = !B.boat;
+  for (const b of document.querySelectorAll("[data-blue]")) b.setAttribute("aria-pressed", String(+b.dataset.blue === state.blue));
+  for (const b of document.querySelectorAll("[data-boat]")) b.setAttribute("aria-pressed", String(+b.dataset.boat === state.boat));
+  $("letters-row").hidden = !B.letters;
+  for (const b of document.querySelectorAll("#seg-lit button")) b.setAttribute("aria-pressed", String(+b.dataset.lit === state.lit));
+  for (const b of document.querySelectorAll("[data-let]")) b.setAttribute("aria-pressed", String(+b.dataset.let === state.let));
+  for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", String(t.dataset.b === state.b));
+  for (const c of document.querySelectorAll(".card")) c.setAttribute("aria-current", String(c.dataset.k === k));
+  try { history.replaceState(null, "", "#" + k); } catch (e) {}
+}
+$("tabs").innerHTML = Object.entries(BUILDINGS).map(([k, B]) => `<button class="tab" role="tab" data-b="${k}">${B.name}</button>`).join("");
+$("tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (t) { state.b = t.dataset.b; render(); } });
+document.querySelectorAll("[data-lit]").forEach(b => b.addEventListener("click", () => { state.lit = +b.dataset.lit; render(); }));
+document.querySelectorAll("[data-let]").forEach(b => b.addEventListener("click", () => { state.let = +b.dataset.let; render(); }));
+document.querySelectorAll("[data-blue]").forEach(b => b.addEventListener("click", () => { state.blue = +b.dataset.blue; render(); }));
+document.querySelectorAll("[data-boat]").forEach(b => b.addEventListener("click", () => { state.boat = +b.dataset.boat; render(); }));
+const ORDER = ["het-pakhuis", "het-pakhuis-noletters", "het-pakhuis-lit", "het-pakhuis-noletters-lit", "eerste-helmersstraat-148", "eerste-helmersstraat-148-lit", "da-costakade-13", "da-costakade-13-lit", "ark-520", "ark-520-blue", "ark-520-noboat", "ark-520-blue-noboat", "ark-520-mix", "ark-520-mix-noboat", "ark-520-swap", "ark-520-swap-noboat", "ark-520-clear", "ark-520-clear-noboat", "ark-520-model", "ark-520-model-blue", "ark-520-model-noboat", "ark-520-model-blue-noboat", "ark-520-model-mix", "ark-520-model-mix-noboat", "ark-520-model-swap", "ark-520-model-swap-noboat", "ark-520-model-clear", "ark-520-model-clear-noboat"];
+function parse(k) { const b = Object.keys(BUILDINGS).find(x => k.startsWith(x)); return { b, lit: (k.endsWith("-lit") || k.includes("-model")) ? 1 : 0, let: k.includes("noletters") ? 0 : 1, blue: k.includes("-clear") ? 4 : k.includes("-swap") ? 3 : k.includes("-mix") ? 2 : k.includes("-blue") ? 1 : 0, boat: k.includes("-noboat") ? 0 : 1 }; }
+$("grid").innerHTML = ORDER.map(k => { const p = parse(k), B = BUILDINGS[p.b];
+  const tags = [B.modes ? B.modes[p.lit] : (p.lit ? "lit" : "glass"), B.letters ? (p.let ? "lettering" : "plain") : "", B.boat ? ["", "blue water", "blue + brown, 5 slots", "blue + brown, spool swap", "clear water + glass, brick"][p.blue] : "", B.boat ? (p.boat ? "" : "house only") : ""].filter(Boolean).join(" · ");
+  return `<button class="card" data-k="${k}"><img src="thumbs/${k}_q1.jpg" alt="${B.name} ${tags}" loading="lazy"><strong>${B.name}</strong><span style="color:var(--muted)">${tags}</span></button>`; }).join("");
+$("grid").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) { state = parse(c.dataset.k); render(); window.scrollTo({ top: 0, behavior: "smooth" }); } });
+const h = location.hash.slice(1); if (META[h]) state = parse(h);
+render();
+</script>
