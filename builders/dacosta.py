@@ -13,8 +13,8 @@ user's photos and the makelaar floorplans (2026-11-17):
   * roof: the flat top is an inset roof terrace behind a parapet with a black railing.
   * grey stone plinth all round.
 Palette (user 2026-11-21, more than 4 colours via Snapmaker Orca mixed filaments): spools brick, green, dark (glass +
-iron), white; mixes darkgreen = green + dark (bottle-green glazed brick: the inner arch over the gable's upper-floor
-French doors), sage = white + green (light grey-green string courses, quoins, outer/ground-floor arch bands), stone = white + dark 35%
+iron), white; mixes greenmix = green + dark 50% (the one bottle-green glazed brick: string courses, quoins, arch bands --
+user's street-view photo 2026-11-21 shows a single dark green, not the earlier sage + dark-green pair), stone = white + dark 35%
 (plinth, gable balconette slabs), roof = white + dark 60% (mansard is mid slate grey: #96959A in sun, #4D5252 overcast).
 The previous GLB-trim version is builders/dacosta_glb_v1.py.
 """
@@ -33,8 +33,8 @@ NAME, LETTERS, LIT = orn.variant_name('da-costakade-13')
 # spools (user's slot order): brick red, Snapmaker SnapSpeed PLA Green #2D9E59 (Christmas bundle), black, white -- no dark-green spool (user 2026-11-21), so both
 # glazed-brick greens are mixes: bottle green = green + black, light grey-green = white + green
 PALETTE = [('brick', '8C4A3A'), ('green', '2D9E59'), ('dark', '23292F'), ('white', 'EEEAE0'),
-           ('darkgreenmix', '26523E'), ('sagemix', 'A1CCAA'), ('stonemix', 'A7A6A2'), ('roofmix', '747676')]
-MIXES = {'darkgreenmix': ('green', 'dark', 65), 'sagemix': ('white', 'green', 40),   # the green is bright: lots of black / white
+           ('greenmix', '286344'), ('stonemix', 'A7A6A2'), ('roofmix', '747676')]
+MIXES = {'greenmix': ('green', 'dark', 50),   # the SnapSpeed green is bright: half black for the glazed bottle green
          'stonemix': ('white', 'dark', 35), 'roofmix': ('white', 'dark', 60)}
 ROLES = dict(brick='mass', slate='roof', glass='opening', red='opening', white='drop', stone='drop', concrete='drop',
              dark='drop', bronze='drop', green='drop')
@@ -46,7 +46,7 @@ TIN, RECESS, PANE, WALL = B.TIN, B.RECESS, B.PANE, B.WALL
 FW = max(0.15, 0.5 * MM)            # white frame bar
 RT = 0.55 * MM                      # railing bar
 KICK, TOPR = 0.4 * MM, 0.4 * MM
-BAND = max(0.15, 0.75 * MM)         # sage string course: >= 4 layers so the white/green layer mix reads evenly
+BAND = max(0.15, 0.75 * MM)         # green string course: >= 4 layers so the green/black layer mix reads evenly
 print(f'scale 1:{1000 / S:.0f}, 1 mm = {MM:.3f} m')
 B.massing()
 
@@ -133,10 +133,10 @@ OPEN['E4'] = [dict(g[0], u0=min(o['u0'] for o in g), u1=max(o['u1'] for o in g),
 
 
 m = orn.Model(NAME, PALETTE)
-m.set_priority(['brick', 'roofmix', 'stonemix', 'sagemix', 'darkgreenmix', 'green', 'dark', 'white']); m.fixed_slots = True
-cuts, adds, accents, accent_holes, darkbands = [], [], [], [], []
+m.set_priority(['brick', 'roofmix', 'stonemix', 'greenmix', 'green', 'dark', 'white']); m.fixed_slots = True
+cuts, adds, accents, accent_holes = [], [], [], []
 
-def window(fk, o, kind, mullion=False, transom=True, arch_band=True, door=False, two_tone=False):
+def window(fk, o, kind, mullion=False, transom=True, arch_band=True, door=False):
     fr = FAC[fk]['fr']; s_w = o['s']
     u0, u1, w0, w1 = o['u0'], o['u1'], o['w0'], o['w1']
     wid = u1 - u0
@@ -167,12 +167,7 @@ def window(fk, o, kind, mullion=False, transom=True, arch_band=True, door=False,
     if arch_band and kind != 'rect':
         top = sbox(u0 - 1, spring - 0.05, u1 + 1, 99)
         s_a = max(s_w, FAC[fk]['s'])   # some GLB openings sit 2 cm behind the facade: keep the inlay on the face
-        if two_tone:   # photo: dark green arch on the frame, brick (dentil) tympanum, light grey-green arch above
-            darkbands.append((fk, P.buffer(0.17, join_style=2).difference(P.buffer(0.02)).intersection(top), s_a))
-            accents.append((fk, P.buffer(0.56, join_style=2).difference(P.buffer(0.38))      # springs off the corbels
-                            .intersection(sbox(u0 - 0.28, spring - 0.05, u1 + 0.28, 99)), s_a))
-        else:
-            accents.append((fk, P.buffer(0.26, join_style=2).difference(P.buffer(0.02)).intersection(top), s_a))
+        accents.append((fk, P.buffer(0.26, join_style=2).difference(P.buffer(0.02)).intersection(top), s_a))
     return spring
 
 def open_rail(fr, u0, u1, s_front, zf, h=1.0, side_ends=(), s_wall=None):
@@ -200,7 +195,7 @@ for o in OPEN['E2']:
     if o['w0'] > 14:      # gable window, moved onto the new gable face and sized from the photo
         o = dict(o, s=fg['s'], u0=UC - 0.72, u1=UC + 0.72, w0=14.15 + 0.2, w1=ZFLAT - 0.25)   # 4th-floor French window (user: entirely on the 4th floor)
         window('E2', o, 'round', mullion=True); continue
-    window('E2', o, 'seg', mullion=True, two_tone=3.5 < o['w0'] < 12)
+    window('E2', o, 'seg', mullion=True)
     if 3.5 < o['w0'] < 12:                               # balconette floors 1-3
         s_w = o['s']; ub0, ub1 = o['u0'] - 0.28, o['u1'] + 0.28; zf = o['w0']
         adds.append(('stonemix', fr2.box(ub0, ub1, zf - SLAB, zf, s_w - TIN, s_w + P_BAL)))
@@ -322,12 +317,23 @@ for fk in ('E1', 'E2'):
     if fk == 'E2':
         strips += [sbox(f['u0'], 0.55, f['u0'] + 0.2, 14.3), sbox(f['u1'] - 0.2, 0.55, f['u1'], 14.3)]   # quoins
     accents.append((fk, unary_union(strips).difference(holes), f['s']))
-for k, f in FAC.items():   # stone plinth
-    adds.append(('stonemix', f['fr'].prism(orn.cs_shapely(sbox(f['u0'] - 0.02, 0.0, f['u1'] + 0.02, 0.55)), f['s'] - TIN, f['s'] + 0.05 * MM)))
-for key, lst in (('sagemix', accents), ('darkgreenmix', darkbands)):
+plinths = [(k, sbox(f['u0'] - 0.02, 0.0, f['u1'] + 0.02, 0.55), f['s']) for k, f in FAC.items()]   # stone plinth
+# the walls are not quite planar (E1's left bay leans ~2.5 cm out over 2.2 m), so a single face-plane inlay sinks into
+# the brick at one end: lift each 0.25 m slice to the outermost footprint point in that slice
+_bd = np.array(foot.exterior.segmentize(0.05).coords)
+def wall_s(fk, ua, ub):
+    fr = FAC[fk]['fr']; s = _bd @ fr.n[:2]; u = _bd @ fr.u[:2]
+    sel = (u > ua - 0.05) & (u < ub + 0.05) & (np.abs(s - FAC[fk]['s']) < 0.3)
+    return float(s[sel].max()) if sel.any() else FAC[fk]['s']
+for key, lst in (('stonemix', plinths), ('greenmix', accents)):
     for fk, g, s_w in lst:
         if g.is_empty: continue
-        adds.append((key, FAC[fk]['fr'].prism(orn.cs_shapely(g), s_w - TIN, s_w + 0.05 * MM)))
+        ua, _, ub, _ = g.bounds
+        for a in np.arange(ua, ub, 0.25):
+            piece = g.intersection(sbox(a, -99, a + 0.25, 99))
+            if piece.is_empty or piece.area < 1e-5: continue
+            top = max(s_w, wall_s(fk, a, a + 0.25)) + 0.05 * MM
+            adds.append((key, FAC[fk]['fr'].prism(orn.cs_shapely(piece), s_w - TIN, top)))
 
 # ------------------------------------------------------------------ eaves: cream gutter fascia over a brick dentil row (photo)
 ZEAVE = 14.0
@@ -360,20 +366,18 @@ body = body - cut; roof = roof - cut
 m.add('brick', body); m.add('roofmix', roof)
 for col, s_ in GABLE: m.add(col, s_)
 for col, s in adds:
-    if col in ('sagemix', 'stonemix', 'darkgreenmix'): s = s - cut
+    if col in ('greenmix', 'stonemix'): s = s - cut
     m.add(col, s)
 parts, summary = orn.finish(m, S, os.path.join(ROOT, 'out', NAME), ring_key='roofmix', ring_embed_z=ZFLAT - TDEPTH, ring_od_mm=15.0, ring_tube_mm=3.0)
 print(json.dumps({k: summary[k] for k in ['size_mm', 'scale', 'dropped_slivers']}), json.dumps(summary['parts'].get('_exterior'))[:300])
 
-# what to set up in Snapmaker Orca: the 3mf already puts the mixed parts on filaments 5-7
+# what to set up in Snapmaker Orca: the 3mf already puts the mixed parts on filaments 5-7 (green, stone, roof)
 keys = [k for k, _ in PALETTE]
 lines = [f'{NAME}: Snapmaker Orca filament slots', '']
 for i, (k, h) in enumerate(PALETTE, 1):
     mx = MIXES.get(k)
     lines.append(f'  {i}  {k:9s} #{h}' + (f'   MIXED: filament {keys.index(mx[0]) + 1} ({mx[0]}) + filament {keys.index(mx[1]) + 1} ({mx[1]}), {mx[2]}% {mx[1]}' if mx else ''))
 lines += ['', 'Load brick, green, black, white into slots 1-4 in that order (green itself prints nothing on its own),',
-          'then add the four mixes (Mixed Filaments > Add Mix) in this order: dark green (filament 5), sage (6), stone (7),',
-          'roof (8).', '',
-          'Sage from white + green alone reads minty; the real glazed brick is a muted grey-green. If Orca lets a mix',
-          'take three filaments, use white 45% + green 30% + black 25% (~#81A38B) for filament 6 instead.']
+          'then add the three mixes (Mixed Filaments > Add Mix) in this order: bottle green (filament 5), stone (6),',
+          'roof (7).']
 open(os.path.join(ROOT, 'out', NAME, 'MIXES.txt'), 'w').write('\n'.join(lines) + '\n')

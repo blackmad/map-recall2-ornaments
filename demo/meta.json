@@ -322,12 +322,11 @@
    "brick": "8C4A3A",
    "dark": "23292F",
    "white": "EEEAE0",
-   "darkgreenmix": "26523E",
-   "sagemix": "A1CCAA",
+   "greenmix": "286344",
    "stonemix": "A7A6A2",
    "roofmix": "747676"
   },
-  "overhang": 1955
+  "overhang": 1961
  },
  "da-costakade-13": {
   "size": [
@@ -340,12 +339,11 @@
    "brick": "8C4A3A",
    "dark": "23292F",
    "white": "EEEAE0",
-   "darkgreenmix": "26523E",
-   "sagemix": "A1CCAA",
+   "greenmix": "286344",
    "stonemix": "A7A6A2",
    "roofmix": "747676"
   },
-  "overhang": 1357
+  "overhang": 1336
  },
  "eerste-helmersstraat-148-lit": {
   "size": [
