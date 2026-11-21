@@ -1,0 +1,17 @@
+da-costakade-13-lit: Snapmaker Orca filament slots
+
+  1  brick     #8C4A3A
+  2  green     #2D9E59
+  3  dark      #23292F
+  4  white     #EEEAE0
+  5  darkgreenmix #26523E   MIXED: filament 2 (green) + filament 3 (dark), 65% dark
+  6  sagemix   #A1CCAA   MIXED: filament 4 (white) + filament 2 (green), 40% green
+  7  stonemix  #A7A6A2   MIXED: filament 4 (white) + filament 3 (dark), 35% dark
+  8  roofmix   #747676   MIXED: filament 4 (white) + filament 3 (dark), 60% dark
+
+Load brick, green, black, white into slots 1-4 in that order (green itself prints nothing on its own),
+then add the four mixes (Mixed Filaments > Add Mix) in this order: dark green (filament 5), sage (6), stone (7),
+roof (8).
+
+Sage from white + green alone reads minty; the real glazed brick is a muted grey-green. If Orca lets a mix
+take three filaments, use white 45% + green 30% + black 25% (~#81A38B) for filament 6 instead.
